@@ -1,0 +1,15 @@
+<h1>Teacher Dashboard</h1>
+<a href="{% url 'lesson_add' %}">➕ Add Lesson</a>
+<hr>
+
+{% for lesson in lessons %}
+  <h3>{{ lesson.title }}</h3>
+  <p>{{ lesson.description }}</p>
+  <a href="{% url 'lesson_edit' lesson.id %}">✏️ Edit</a>
+  <a href="{% url 'lesson_delete' lesson.id %}">🗑 Delete</a>
+  <hr>
+{% empty %}
+  <p>No lessons yet.</p>
+{% endfor %}
+
+<a href="{% url 'logout' %}">Logout</a>

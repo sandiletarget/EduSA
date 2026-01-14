@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Delete Lesson</title>
+</head>
+<body>
+<h1>Delete Lesson</h1>
+<p>Are you sure you want to delete "{{ lesson.title }}"?</p>
+<form method="post">
+    {% csrf_token %}
+    <button type="submit">Yes, Delete</button>
+</form>
+<p><a href="{% url 'teacher_dashboard' %}">Cancel</a></p>
+</body>
+</html>

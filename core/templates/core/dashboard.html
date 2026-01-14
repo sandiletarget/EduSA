@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Dashboard</title>
+</head>
+<body>
+    <h1>Student Dashboard</h1>
+
+    <ul>
+        {% for lesson in lessons %}
+            <li>{{ lesson.title }}</li>
+        {% empty %}
+            <li>No lessons yet.</li>
+        {% endfor %}
+    </ul>
+
+    <a href="/">Back Home</a>
+</body>
+</html>
+

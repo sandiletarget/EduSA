@@ -1,0 +1,13 @@
+<h2>EduSA Login</h2>
+<form method="post">
+  {% csrf_token %}
+  {% if error %}
+  <p class="text-red-600">{{ error }}</p>
+  {% endif %}
+  {% if next %}
+  <input type="hidden" name="next" value="{{ next }}">
+  {% endif %}
+  <input name="username" placeholder="Username"><br><br>
+  <input name="password" type="password" placeholder="Password"><br><br>
+  <button type="submit">Login</button>
+</form>

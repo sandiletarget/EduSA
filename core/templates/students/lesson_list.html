@@ -1,0 +1,13 @@
+<h2>Available Lessons</h2>
+
+<ul>
+  {% for lesson in lessons %}
+    <li>
+      <a href="{% url 'student_lesson_detail' lesson.id %}">
+        {{ lesson.title }} – {{ lesson.subject }} (Grade {{ lesson.grade }})
+      </a>
+    </li>
+  {% empty %}
+    <li>No lessons available</li>
+  {% endfor %}
+</ul>

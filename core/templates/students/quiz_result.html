@@ -1,0 +1,24 @@
+<h2>Quiz Completed</h2>
+
+<p>Your score: <strong>{{ score }}%</strong></p>
+
+<a href="/student/lessons/">Back to lessons</a>
+
+<h2>Quiz Completed</h2>
+
+<p>Your score: <strong>{{ score }}%</strong></p>
+
+{% if score >= 50 %}
+    <p style="color: green;">✔ You passed!</p>
+    <a href="{% url 'certificate' result.id %}">
+        Download Certificate (PDF)
+    </a>
+{% else %}
+    <p style="color: red;">❌ You did not pass. Try again.</p>
+{% endif %}
+
+<a href="/student/lessons/">Back to lessons</a>
+
+<a href="{% url 'certificate' result.id %}">
+    Download Certificate (PDF)
+</a>

@@ -1,0 +1,10 @@
+<h2>{% if lesson %}Edit{% else %}Add{% endif %} Lesson</h2>
+
+<form method="post">
+  {% csrf_token %}
+  <input name="title" placeholder="Title" value="{{ lesson.title|default:'' }}"><br><br>
+  <textarea name="description" placeholder="Description">{{ lesson.description|default:'' }}</textarea><br><br>
+  <button type="submit">Save</button>
+</form>
+
+<a href="{% url 'teacher_dashboard' %}">Back</a>

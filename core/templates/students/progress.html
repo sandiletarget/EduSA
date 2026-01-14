@@ -1,0 +1,9 @@
+<h2>My Progress</h2>
+
+<ul>
+  {% for item in progress %}
+    <li>{{ item.lesson.title }} – ✔ Completed</li>
+  {% empty %}
+    <li>No completed lessons yet</li>
+  {% endfor %}
+</ul>

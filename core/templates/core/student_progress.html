@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>My Progress</title>
+</head>
+<body>
+    <h1>My Progress</h1>
+
+    <ul>
+        {% for p in progress %}
+            <li>
+                <strong>{{ p.lesson.title }}</strong> – {{ p.mark }}%
+            </li>
+        {% empty %}
+            <li>No marks yet.</li>
+        {% endfor %}
+    </ul>
+
+    <a href="/logout/">Logout</a>
+</body>
+</html>

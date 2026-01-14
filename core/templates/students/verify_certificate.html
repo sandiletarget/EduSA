@@ -1,0 +1,19 @@
+<h2>Certificate Verification</h2>
+
+<form method="get" action="{% url 'verify_certificate' %}">
+    <label>Enter Certificate Code:</label>
+    <input type="text" name="code" value="{{ code }}">
+    <button type="submit">Verify</button>
+</form>
+
+{% if code %}
+    {% if valid %}
+        <p style="color: green;">✔ Certificate is VALID!</p>
+        <p>Student: {{ result.student.username }}</p>
+        <p>Quiz: {{ result.quiz.title }}</p>
+        <p>Score: {{ result.score }}%</p>
+        <p>Date: {{ result.completed_at|date:"Y-m-d" }}</p>
+    {% else %}
+        <p style="color: red;">❌ Invalid certificate code.</p>
+    {% endif %}
+{% endif %}

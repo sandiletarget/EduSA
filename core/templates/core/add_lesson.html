@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Add Lesson</title>
+</head>
+<body>
+<h1>Add Lesson</h1>
+<form method="post">
+    {% csrf_token %}
+    <label>Title:</label><br>
+    <input type="text" name="title" required><br>
+    <label>Description:</label><br>
+    <textarea name="description" required></textarea><br>
+    <button type="submit">Add Lesson</button>
+</form>
+<p><a href="{% url 'teacher_dashboard' %}">Back to Dashboard</a></p>
+</body>
+</html>

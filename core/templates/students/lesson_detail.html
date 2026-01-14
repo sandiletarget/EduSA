@@ -1,0 +1,23 @@
+<h2>{{ lesson.title }}</h2>
+
+<p><strong>Subject:</strong> {{ lesson.subject }}</p>
+<p><strong>Grade:</strong> {{ lesson.grade }}</p>
+
+<hr>
+
+<p>{{ lesson.content }}</p>
+
+<form method="post" action="{% url 'mark_lesson_complete' lesson.id %}">
+    {% csrf_token %}
+    <button type="submit">
+        Mark as Completed
+    </button>
+</form>
+
+{% if progress and progress.completed %}
+    <p style="color: green;">✔ Lesson Completed</p>
+{% endif %}
+
+<a href="{% url 'take_quiz' lesson.id %}">
+    Take Quiz
+</a>
