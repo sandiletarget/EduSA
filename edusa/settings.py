@@ -150,14 +150,3 @@ LOGIN_URL = "login"
 LOGIN_REDIRECT_URL = "teacher_dashboard"
 LOGOUT_REDIRECT_URL = "login"
 
-DEBUG = False
-
-ALLOWED_HOSTS = [
-    'edusa-78jg.onrender.com',
-    '.onrender.com',
-]
-
-CSRF_TRUSTED_ORIGINS = [
-    'https://edusa-78jg.onrender.com',
-]
-
