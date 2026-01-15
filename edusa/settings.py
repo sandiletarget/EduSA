@@ -134,8 +134,11 @@ import os
 ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "").split(",")
 
 # Optional for local testing
-if not ALLOWED_HOSTS:
-    ALLOWED_HOSTS = ["edusa-78jg.onrender.com", "localhost", "127.0.0.1"]
+if not ALLOWED_HOSTS:  
     ALLOWED_HOSTS = ['edusa-78jg.onrender.com',
     'localhost',
     '127.0.0.1',]
+    
+    CSRF_TRUSTED_ORIGINS = [
+    'https://edusa-78jg.onrender.com',
+]
