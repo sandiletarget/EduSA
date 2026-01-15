@@ -142,3 +142,5 @@ if not ALLOWED_HOSTS:
     CSRF_TRUSTED_ORIGINS = [
     'https://edusa-78jg.onrender.com',
 ]
+DEBUG = False
+STATIC_ROOT = BASE_DIR / 'staticfiles'
