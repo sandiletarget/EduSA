@@ -135,3 +135,6 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 LOGIN_URL = "login"
 LOGIN_REDIRECT_URL = "teacher_dashboard"
 LOGOUT_REDIRECT_URL = "login"
+import os
+
+ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "").split(",")
