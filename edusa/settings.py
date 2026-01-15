@@ -136,4 +136,4 @@ ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "").split(",")
 # Optional for local testing
 if not ALLOWED_HOSTS:
     ALLOWED_HOSTS = ["edusa-78jg.onrender.com", "localhost", "127.0.0.1"]
-
+    ALLOWED_HOSTS = ["edusa-78jg.onrender.com", "localhost", "127.0.0.1"]
