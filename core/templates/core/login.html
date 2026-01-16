@@ -1,3 +1,5 @@
+{% load socialaccount %}
+
 <h2>EduSA Login</h2>
 <form method="post">
   {% csrf_token %}
@@ -11,3 +13,13 @@
   <input name="password" type="password" placeholder="Password"><br><br>
   <button type="submit">Login</button>
 </form>
+
+<hr>
+
+<div>
+  <a href="{% provider_login_url 'google' next=next %}">Continue with Google</a>
+</div>
+
+<p>
+  <a href="/accounts/signup/">Create an account</a>
+</p>
