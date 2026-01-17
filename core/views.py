@@ -1,6 +1,7 @@
 from django.contrib import messages
 from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.models import Group
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
@@ -12,7 +13,7 @@ from classes.models import Class as Classroom, ClassMembership
 from .accounts.decorators import student_required
 from .forms import JoinClassForm
 from .models import Lesson, QuizResult
-from .utils import ROLE_DASHBOARD, dashboard_for_user, normalize_role
+from .utils import ROLE_DASHBOARD, dashboard_for_user, resolve_user_role
 
 
 django_engine = engines["django"]
@@ -58,13 +59,13 @@ JOIN_CLASS_TEMPLATE = django_engine.from_string(
 
 
 def _dispatch_dashboard_redirect(request, expected_role):
-    normalized_role = normalize_role(getattr(request.user, "role", None))
+    normalized_role = resolve_user_role(request.user)
     if normalized_role == expected_role:
         return None
     dashboard = ROLE_DASHBOARD.get(normalized_role)
     if dashboard:
         return redirect(dashboard)
-    return redirect("home")
+    return redirect("choose_role")
 
 
 
@@ -84,7 +85,7 @@ def login_view(request):
             login(request, user)
             dashboard_name = dashboard_for_user(user)
             if not dashboard_name:
-                dashboard_name = "home"
+                dashboard_name = "choose_role"
             allowed_hosts = {request.get_host()}
             if next_url and url_has_allowed_host_and_scheme(next_url, allowed_hosts=allowed_hosts, require_https=request.is_secure()):
                 return redirect(next_url)
@@ -105,6 +106,40 @@ def logout_view(request):
 
 def is_teacher(user):
     return user.is_staff
+
+
+@login_required
+def choose_role(request):
+    current_role = resolve_user_role(request.user)
+    if current_role in ROLE_DASHBOARD:
+        return redirect(ROLE_DASHBOARD[current_role])
+
+    if request.method == "POST":
+        selected = (request.POST.get("role") or "").strip().lower()
+        if selected in ROLE_DASHBOARD:
+            students_group, _ = Group.objects.get_or_create(name="Students")
+            teachers_group, _ = Group.objects.get_or_create(name="Teachers")
+
+            if selected == "teacher":
+                request.user.groups.add(teachers_group)
+                request.user.groups.remove(students_group)
+                request.user.is_staff = True
+            else:
+                request.user.groups.add(students_group)
+                request.user.groups.remove(teachers_group)
+                request.user.is_staff = False
+
+            update_fields = ["is_staff"]
+            if hasattr(request.user, "role"):
+                request.user.role = selected
+                update_fields.append("role")
+
+            request.user.save(update_fields=update_fields)
+            return redirect(ROLE_DASHBOARD[selected])
+
+        messages.error(request, "Please choose a valid role.")
+
+    return render(request, "core/choose_role.html")
 
 
 @login_required
