@@ -64,7 +64,7 @@ def _dispatch_dashboard_redirect(request, expected_role):
     dashboard = ROLE_DASHBOARD.get(normalized_role)
     if dashboard:
         return redirect(dashboard)
-    return redirect("login")
+    return redirect("home")
 
 
 
@@ -84,7 +84,7 @@ def login_view(request):
             login(request, user)
             dashboard_name = dashboard_for_user(user)
             if not dashboard_name:
-                dashboard_name = "teacher_dashboard" if user.is_staff else "student_dashboard"
+                dashboard_name = "home"
             allowed_hosts = {request.get_host()}
             if next_url and url_has_allowed_host_and_scheme(next_url, allowed_hosts=allowed_hosts, require_https=request.is_secure()):
                 return redirect(next_url)
