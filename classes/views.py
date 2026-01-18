@@ -24,6 +24,9 @@ def class_detail(request, pk):
         "is_teacher": is_teacher,
         "memberships": memberships,
         "active_session": classroom.live_sessions.filter(is_active=True).order_by("-started_at").first(),
+        "jitsi_domain": "meet.jit.si",
+        "jitsi_room": f"edusa-class-{classroom.pk}",
+        "jitsi_display_name": request.user.get_full_name() or request.user.username,
     }
     return render(request, "classes/class_detail.html", context)
 
