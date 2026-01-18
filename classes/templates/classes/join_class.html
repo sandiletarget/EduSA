@@ -1,0 +1,35 @@
+{% extends "core/base.html" %}
+{% block content %}
+<div class="max-w-2xl mx-auto rounded-2xl bg-white/90 p-8 shadow-xl">
+	<h1 class="text-3xl font-semibold text-slate-900">Join a class</h1>
+	{% if messages %}
+		<div class="mt-4 space-y-2">
+			{% for message in messages %}
+				<div class="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700">
+					{{ message }}
+				</div>
+			{% endfor %}
+		</div>
+	{% endif %}
+	<form method="post" novalidate class="mt-6 space-y-4">
+		{% csrf_token %}
+		{% if form.non_field_errors %}
+			<div class="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+				{% for error in form.non_field_errors %}
+					{{ error }}
+				{% endfor %}
+			</div>
+		{% endif %}
+		<div class="space-y-1 text-sm font-medium text-slate-700">
+			{{ form.passcode.label_tag }}
+			{{ form.passcode }}
+		</div>
+		{% if form.passcode.errors %}
+			<p class="text-sm text-red-600">{{ form.passcode.errors|join:", " }}</p>
+		{% endif %}
+		<button type="submit" class="w-full rounded-lg bg-sky-600 px-4 py-2 text-white shadow-sm hover:bg-sky-500">
+			Join class
+		</button>
+	</form>
+</div>
+{% endblock %}
