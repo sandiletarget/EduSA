@@ -1,3 +1,5 @@
+import logging
+
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied, ValidationError
@@ -8,6 +10,9 @@ from django.utils import timezone
 from core.forms import JoinClassForm
 from .forms import ClassForm
 from .models import Class, ClassMembership, LiveSession
+
+
+logger = logging.getLogger(__name__)
 
 
 @login_required
@@ -97,6 +102,9 @@ def create_class(request):
             form.add_error(None, exc)
         except DatabaseError:
             form.add_error(None, "Database error while creating the class. Please try again or contact support.")
+        except Exception as exc:
+            logger.exception("Unexpected error creating class", exc_info=exc)
+            form.add_error(None, "Unexpected error while creating the class. Please try again.")
         else:
             messages.success(request, f"Class created. Passcode: {classroom.passcode}")
             return redirect("classes:class_detail", pk=classroom.pk)
