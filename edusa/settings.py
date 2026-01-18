@@ -132,10 +132,14 @@ if GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET:
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
+DEFAULT_DB_PATH = BASE_DIR / "db.sqlite3"
+if not DEBUG and not os.environ.get("DATABASE_NAME"):
+    DEFAULT_DB_PATH = Path("/tmp/db.sqlite3")
+
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+    "default": {
+        "ENGINE": "django.db.backends.sqlite3",
+        "NAME": os.environ.get("DATABASE_NAME", DEFAULT_DB_PATH),
     }
 }
 

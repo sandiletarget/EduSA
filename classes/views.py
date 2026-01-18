@@ -1,6 +1,7 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.core.exceptions import PermissionDenied
+from django.core.exceptions import PermissionDenied, ValidationError
+from django.db import DatabaseError
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 
@@ -17,7 +18,8 @@ def class_detail(request, pk):
     membership = memberships.filter(learner=request.user).first()
 
     if not (is_teacher or membership):
-        raise PermissionDenied
+        messages.info(request, "Join the class to view details.")
+        return redirect("classes:join_class")
 
     context = {
         "classroom": classroom,
@@ -89,8 +91,14 @@ def create_class(request):
     if request.method == "POST" and form.is_valid():
         classroom = form.save(commit=False)
         classroom.teacher = request.user
-        classroom.save()
-        messages.success(request, f"Class created. Passcode: {classroom.passcode}")
-        return redirect("classes:class_detail", pk=classroom.pk)
+        try:
+            classroom.save()
+        except ValidationError as exc:
+            form.add_error(None, exc)
+        except DatabaseError:
+            form.add_error(None, "Database error while creating the class. Please try again or contact support.")
+        else:
+            messages.success(request, f"Class created. Passcode: {classroom.passcode}")
+            return redirect("classes:class_detail", pk=classroom.pk)
 
     return render(request, "classes/class_form.html", {"form": form})
