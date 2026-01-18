@@ -32,7 +32,7 @@ class Class(models.Model):
 
     def clean(self):
         super().clean()
-        if self.teacher and not self.teacher.is_staff:
+        if self.teacher_id and not self.teacher.is_staff:
             raise ValidationError({
                 "teacher": "Only staff members may own classes."
             })
