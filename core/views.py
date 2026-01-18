@@ -11,8 +11,8 @@ from django.utils.http import url_has_allowed_host_and_scheme
 from classes.models import Class as Classroom, ClassMembership
 
 from .accounts.decorators import student_required
-from .forms import JoinClassForm
-from .models import Lesson, QuizResult
+from .forms import ExamForm, JoinClassForm
+from .models import Exam, Lesson, QuizResult
 from .utils import ROLE_DASHBOARD, dashboard_for_user, resolve_user_role
 
 
@@ -149,7 +149,13 @@ def teacher_dashboard(request):
         return redirect_response
 
     lessons = Lesson.objects.all()
-    return render(request, "core/teacher_dashboard.html", {"lessons": lessons})
+    classes = Classroom.objects.filter(teacher=request.user)
+    exams = Exam.objects.filter(created_by=request.user)
+    return render(request, "core/teacher_dashboard.html", {
+        "lessons": lessons,
+        "classes": classes,
+        "exams": exams,
+    })
 
 
 @login_required
@@ -184,13 +190,33 @@ def lesson_delete(request, pk):
 
 
 @login_required
+@user_passes_test(is_teacher)
+def exam_create(request):
+    form = ExamForm(request.POST or None, teacher=request.user)
+    if request.method == "POST" and form.is_valid():
+        exam = form.save(commit=False)
+        exam.created_by = request.user
+        exam.save()
+        messages.success(request, "Exam created successfully.")
+        return redirect("teacher_dashboard")
+    return render(request, "teachers/exam_form.html", {"form": form})
+
+
+@login_required
 def student_dashboard(request):
     redirect_response = _dispatch_dashboard_redirect(request, "student")
     if redirect_response:
         return redirect_response
 
     lessons = Lesson.objects.all()
-    return render(request, "core/student_dashboard.html", {"lessons": lessons})
+    memberships = ClassMembership.objects.filter(learner=request.user).select_related("classroom")
+    classrooms = [membership.classroom for membership in memberships]
+    exams = Exam.objects.filter(classroom__in=classrooms)
+    return render(request, "core/student_dashboard.html", {
+        "lessons": lessons,
+        "classrooms": classrooms,
+        "exams": exams,
+    })
 
 
 @login_required

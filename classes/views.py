@@ -5,6 +5,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 
 from core.forms import JoinClassForm
+from .forms import ClassForm
 from .models import Class, ClassMembership, LiveSession
 
 
@@ -74,3 +75,19 @@ def join_class(request):
         return redirect("classes:class_detail", pk=classroom.pk)
 
     return render(request, "classes/join_class.html", {"form": form})
+
+
+@login_required
+def create_class(request):
+    if not request.user.is_staff:
+        raise PermissionDenied
+
+    form = ClassForm(request.POST or None)
+    if request.method == "POST" and form.is_valid():
+        classroom = form.save(commit=False)
+        classroom.teacher = request.user
+        classroom.save()
+        messages.success(request, f"Class created. Passcode: {classroom.passcode}")
+        return redirect("classes:class_detail", pk=classroom.pk)
+
+    return render(request, "classes/class_form.html", {"form": form})

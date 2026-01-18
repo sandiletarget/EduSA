@@ -108,3 +108,26 @@ class QuizResult(models.Model):
 
     def __str__(self):
         return f"{self.student} - {self.quiz} - {self.score}%"
+
+
+class Exam(models.Model):
+    classroom = models.ForeignKey(
+        "classes.Class",
+        on_delete=models.CASCADE,
+        related_name="exams",
+    )
+    title = models.CharField(max_length=200)
+    description = models.TextField(blank=True)
+    due_date = models.DateField(null=True, blank=True)
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="exams_created",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ("-created_at",)
+
+    def __str__(self):
+        return self.title

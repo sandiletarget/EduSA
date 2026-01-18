@@ -1,0 +1,122 @@
+<div class="max-w-6xl mx-auto space-y-8">
+	<header class="flex flex-wrap items-center justify-between gap-4 rounded-2xl bg-white/80 p-5 shadow-sm backdrop-blur">
+		<div class="flex items-center gap-3">
+			<div class="h-12 w-12 rounded-2xl bg-blue-600/10 flex items-center justify-center text-blue-700 font-bold">
+				🎓
+			</div>
+			<div>
+				<p class="text-xs uppercase tracking-widest text-slate-500">EduSA</p>
+				<h1 class="text-lg font-semibold text-slate-900">Student Dashboard</h1>
+			</div>
+		</div>
+		<div class="flex items-center gap-3">
+			<a href="{% url 'student_lessons' %}" class="rounded-full bg-indigo-600 px-5 py-2 text-white font-semibold shadow hover:bg-indigo-500">Start Learning</a>
+			<a href="{% url 'logout' %}" class="rounded-full border border-slate-200 px-4 py-2 text-slate-600 hover:bg-slate-50">Logout</a>
+		</div>
+	</header>
+
+	<section class="rounded-3xl bg-gradient-to-r from-indigo-600 via-purple-600 to-fuchsia-600 px-8 py-6 text-white shadow-lg">
+		<p class="text-sm uppercase tracking-wide opacity-80">Welcome back!</p>
+		<h2 class="mt-2 text-3xl font-semibold">Hello, {{ request.user.first_name|default:request.user.username }}!</h2>
+		<p class="mt-2 text-white/80">Continue your learning journey today.</p>
+		<div class="mt-5 flex flex-wrap gap-3">
+			<a href="{% url 'student_lessons' %}" class="rounded-full bg-white px-5 py-2 text-sm font-semibold text-indigo-700">Start Learning</a>
+			<a href="{% url 'classes:join_class' %}" class="rounded-full bg-white/15 px-4 py-2 text-sm font-medium text-white hover:bg-white/25">Join Class</a>
+		</div>
+	</section>
+
+	<section class="grid gap-6 lg:grid-cols-2">
+		<div class="rounded-3xl bg-gradient-to-br from-amber-500 to-orange-500 p-6 text-white shadow-lg">
+			<div class="flex items-center justify-between">
+				<div>
+					<p class="text-sm uppercase opacity-80">Your Points</p>
+					<p class="mt-2 text-3xl font-semibold">0</p>
+				</div>
+				<div class="rounded-2xl bg-white/20 px-4 py-2 text-sm">Level 1</div>
+			</div>
+			<div class="mt-6 h-2 rounded-full bg-white/30">
+				<div class="h-2 w-1/4 rounded-full bg-white"></div>
+			</div>
+			<p class="mt-3 text-sm text-white/80">1000 points to next level</p>
+		</div>
+
+		<div class="rounded-3xl bg-gradient-to-br from-orange-500 to-rose-500 p-6 text-white shadow-lg">
+			<p class="text-sm uppercase opacity-80">Daily Streak</p>
+			<p class="mt-3 text-3xl font-semibold">0 days</p>
+			<p class="mt-3 text-sm text-white/80">Complete a lesson today to start your streak!</p>
+		</div>
+	</section>
+
+	<section class="rounded-3xl bg-white p-6 shadow-sm">
+		<h3 class="text-lg font-semibold text-slate-900">Study Tools</h3>
+		<div class="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+			<div class="rounded-2xl border border-slate-100 p-6 text-center">
+				<p class="text-sm font-semibold text-slate-800">Calculator</p>
+			</div>
+			<div class="rounded-2xl border border-slate-100 p-6 text-center">
+				<p class="text-sm font-semibold text-slate-800">Formula Sheet</p>
+			</div>
+			<div class="rounded-2xl border border-slate-100 p-6 text-center">
+				<p class="text-sm font-semibold text-slate-800">Periodic Table</p>
+			</div>
+		</div>
+	</section>
+
+	<section class="grid gap-6 lg:grid-cols-2">
+		<div class="rounded-2xl bg-white p-6 shadow-sm">
+			<div class="flex items-center justify-between">
+				<h3 class="text-lg font-semibold text-slate-900">My Classes</h3>
+				<a href="{% url 'classes:join_class' %}" class="text-sm text-indigo-600 hover:underline">Join class</a>
+			</div>
+			<div class="mt-4 space-y-3">
+				{% for classroom in classrooms %}
+					<div class="rounded-xl border border-slate-100 p-4">
+						<p class="font-semibold text-slate-900">{{ classroom.name }}</p>
+						<p class="text-sm text-slate-500">{{ classroom.description|default:"No description" }}</p>
+					</div>
+				{% empty %}
+					<p class="text-sm text-slate-500">You have not joined any classes yet.</p>
+				{% endfor %}
+			</div>
+		</div>
+
+		<div class="rounded-2xl bg-white p-6 shadow-sm">
+			<div class="flex items-center justify-between">
+				<h3 class="text-lg font-semibold text-slate-900">Upcoming Exams</h3>
+				<span class="text-sm text-slate-400">{{ exams|length }} total</span>
+			</div>
+			<div class="mt-4 space-y-3">
+				{% for exam in exams|slice:":4" %}
+					<div class="rounded-xl border border-slate-100 p-4">
+						<div class="flex items-center justify-between">
+							<p class="font-semibold text-slate-900">{{ exam.title }}</p>
+							{% if exam.due_date %}
+								<span class="text-xs text-slate-500">Due {{ exam.due_date }}</span>
+							{% endif %}
+						</div>
+						<p class="text-sm text-slate-500">{{ exam.classroom.name }}</p>
+					</div>
+				{% empty %}
+					<p class="text-sm text-slate-500">No exams available yet.</p>
+				{% endfor %}
+			</div>
+		</div>
+	</section>
+
+	<section class="rounded-2xl bg-white p-6 shadow-sm">
+		<div class="flex items-center justify-between">
+			<h3 class="text-lg font-semibold text-slate-900">Recent Lessons</h3>
+			<a href="{% url 'student_lessons' %}" class="text-sm text-indigo-600 hover:underline">View all</a>
+		</div>
+		<div class="mt-4 space-y-4">
+			{% for lesson in lessons|slice:":4" %}
+				<div class="rounded-xl border border-slate-100 p-4">
+					<p class="font-semibold text-slate-900">{{ lesson.title }}</p>
+					<p class="text-sm text-slate-500">{{ lesson.description|default:"No description" }}</p>
+				</div>
+			{% empty %}
+				<p class="text-sm text-slate-500">No lessons available.</p>
+			{% endfor %}
+		</div>
+	</section>
+</div>

@@ -1,0 +1,30 @@
+{% extends "core/base.html" %}
+{% block content %}
+<div class="mx-auto max-w-2xl rounded-3xl bg-white/90 p-8 shadow-xl">
+  <h1 class="text-2xl font-semibold text-slate-900">Create an exam</h1>
+  <p class="mt-2 text-slate-600">Assign the exam to one of your classes.</p>
+
+  <form method="post" class="mt-6 space-y-4">
+    {% csrf_token %}
+    <div>
+      <label class="text-sm font-medium text-slate-700">Class</label>
+      {{ form.classroom }}
+    </div>
+    <div>
+      <label class="text-sm font-medium text-slate-700">Title</label>
+      {{ form.title }}
+    </div>
+    <div>
+      <label class="text-sm font-medium text-slate-700">Description</label>
+      {{ form.description }}
+    </div>
+    <div>
+      <label class="text-sm font-medium text-slate-700">Due date</label>
+      {{ form.due_date }}
+    </div>
+    <button type="submit" class="w-full rounded-lg bg-purple-600 px-4 py-2 text-white font-semibold shadow-sm hover:bg-purple-500">
+      Create exam
+    </button>
+  </form>
+</div>
+{% endblock %}

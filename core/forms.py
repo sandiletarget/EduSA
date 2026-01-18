@@ -1,7 +1,7 @@
 from django import forms
 
 from classes.models import Class as Classroom
-from .models import Lesson
+from .models import Exam, Lesson
 
 
 class LessonForm(forms.ModelForm):
@@ -39,3 +39,40 @@ class JoinClassForm(forms.Form):
             )
         self.classroom = classroom
         return code
+
+
+class ExamForm(forms.ModelForm):
+    class Meta:
+        model = Exam
+        fields = ["classroom", "title", "description", "due_date"]
+        widgets = {
+            "classroom": forms.Select(
+                attrs={
+                    "class": "mt-1 w-full rounded-lg border border-slate-200 px-4 py-2 text-sm text-slate-900",
+                }
+            ),
+            "title": forms.TextInput(
+                attrs={
+                    "class": "mt-1 w-full rounded-lg border border-slate-200 px-4 py-2 text-sm text-slate-900",
+                    "placeholder": "Exam title",
+                }
+            ),
+            "description": forms.Textarea(
+                attrs={
+                    "class": "mt-1 w-full rounded-lg border border-slate-200 px-4 py-2 text-sm text-slate-900",
+                    "placeholder": "Exam description",
+                    "rows": 4,
+                }
+            ),
+            "due_date": forms.DateInput(
+                attrs={
+                    "type": "date",
+                    "class": "mt-1 w-full rounded-lg border border-slate-200 px-4 py-2 text-sm text-slate-900",
+                }
+            ),
+        }
+
+    def __init__(self, *args, teacher=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        if teacher is not None:
+            self.fields["classroom"].queryset = Classroom.objects.filter(teacher=teacher)
