@@ -1,0 +1,21 @@
+<footer class="live-controls">
+  <div class="controls-group">
+    <button class="control-btn" type="button" id="toggleMic">🎙️ Mic</button>
+    <button class="control-btn" type="button" id="toggleCamera">🎥 Camera</button>
+    <button class="control-btn" type="button" id="raiseHand">✋ Raise</button>
+    <button class="control-btn" type="button" data-panel-toggle="chat">💬 Chat</button>
+    <button class="control-btn" type="button" data-panel-toggle="participants">👥 Participants</button>
+    <button class="control-btn" type="button" data-panel-toggle="whiteboard">📝 Whiteboard</button>
+    <button class="control-btn" type="button" id="shareScreen">🖥️ Share</button>
+  </div>
+
+  <div class="controls-group">
+    {% if is_teacher %}
+      <button class="control-btn" type="button" id="startClass">▶ Start</button>
+      <button class="control-btn" type="button" id="muteAll">🔇 Mute all</button>
+      <button class="control-btn" type="button" id="lockClass">🔒 Lock</button>
+      <button class="control-btn" type="button" id="toggleChat">💬 Disable chat</button>
+    {% endif %}
+    <a class="control-btn leave" href="{% url 'classes:class_detail' classroom.pk %}">Leave</a>
+  </div>
+</footer>

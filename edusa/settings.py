@@ -59,10 +59,12 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.sites',
+    'channels',
     'allauth',
     'allauth.account',
     'allauth.socialaccount',
     'allauth.socialaccount.providers.google',
+    'backend',
     'classes',
     'core.apps.CoreConfig',
     'main.apps.MainConfig',
@@ -85,7 +87,7 @@ ROOT_URLCONF = 'edusa.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [BASE_DIR / 'frontend' / 'templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -98,6 +100,7 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'edusa.wsgi.application'
+ASGI_APPLICATION = 'edusa.asgi.application'
 
 SITE_ID = int(os.environ.get("DJANGO_SITE_ID", "1"))
 
@@ -134,7 +137,8 @@ if GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET:
 
 DEFAULT_DB_PATH = BASE_DIR / "db.sqlite3"
 if not DEBUG and not os.environ.get("DATABASE_NAME"):
-    DEFAULT_DB_PATH = Path("/tmp/db.sqlite3")
+    if Path("/tmp").exists():
+        DEFAULT_DB_PATH = Path("/tmp/db.sqlite3")
 
 DATABASES = {
     "default": {
@@ -180,6 +184,13 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
+STATICFILES_DIRS = [BASE_DIR / 'frontend' / 'static']
+
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels.layers.InMemoryChannelLayer",
+    }
+}
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field

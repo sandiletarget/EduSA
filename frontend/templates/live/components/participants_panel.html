@@ -1,0 +1,12 @@
+<section class="side-panel" data-panel="participants">
+  <header class="side-panel__header">
+    <h2>Participants</h2>
+    <button class="panel-close" type="button" data-panel-close>×</button>
+  </header>
+  <div class="side-panel__body" id="participantsList">
+    <div class="participant-item">
+      <span>{{ classroom.teacher.get_full_name|default:classroom.teacher.username }}</span>
+      <span class="participant-role">Host</span>
+    </div>
+  </div>
+</section>

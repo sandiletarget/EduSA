@@ -1,0 +1,31 @@
+{% extends "core/base.html" %}
+{% load static %}
+
+{% block extra_head %}
+  <link rel="stylesheet" href="{% static 'css/live_class.css' %}">
+{% endblock %}
+
+{% block body_class %}live-class-body{% endblock %}
+
+{% block content %}
+<div class="live-class-layout" data-room-id="{{ classroom.id }}" data-username="{{ request.user.username }}" data-role="{% if is_teacher %}teacher{% else %}student{% endif %}">
+  {% include "live/components/top_bar.html" %}
+
+  <div class="live-class-main">
+    <div class="live-class-stage">
+      {% include "live/components/video_grid.html" %}
+    </div>
+
+    <aside class="live-class-panels" id="livePanels">
+      {% include "live/components/chat_panel.html" %}
+      {% include "live/components/participants_panel.html" %}
+      {% include "live/components/whiteboard_panel.html" %}
+    </aside>
+  </div>
+
+  {% include "live/components/control_bar.html" %}
+</div>
+
+<script src="{% static 'js/signaling.js' %}"></script>
+<script src="{% static 'js/webrtc.js' %}"></script>
+{% endblock %}
