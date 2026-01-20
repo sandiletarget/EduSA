@@ -12,32 +12,28 @@ dashboard-body{% if role_theme == "teacher" %} teacher-theme{% elif role_theme =
 {% endblock %}
 
 {% block content %}
-  {% if request.user.is_authenticated %}
-    <div class="dashboard-layout">
-      <aside class="dashboard-sidebar" id="dashboardSidebar">
-        {% if role_theme == "teacher" %}
-          {% include "core/teacher_sidebar.html" %}
-        {% elif role_theme == "student" %}
-          {% include "core/student_sidebar.html" %}
-        {% endif %}
-      </aside>
+  <div class="dashboard-layout">
+    <aside class="dashboard-sidebar" id="dashboardSidebar">
+      {% if role_theme == "teacher" %}
+        {% include "core/teacher_sidebar.html" %}
+      {% elif role_theme == "student" %}
+        {% include "core/student_sidebar.html" %}
+      {% endif %}
+    </aside>
 
-      <div class="dashboard-main">
-        <header class="dashboard-topbar">
-          <button class="sidebar-toggle" type="button" data-sidebar-toggle aria-label="Toggle navigation">
-            ☰
-          </button>
-          <div class="dashboard-topbar__title">
-            {% block dashboard_title %}{% endblock %}
-          </div>
-        </header>
-        <section class="dashboard-content">
-          {% block dashboard_content %}{% endblock %}
-        </section>
-      </div>
+    <div class="dashboard-main">
+      <header class="dashboard-topbar">
+        <button class="sidebar-toggle" type="button" data-sidebar-toggle aria-label="Toggle navigation">
+          ☰
+        </button>
+        <div class="dashboard-topbar__title">
+          {% block dashboard_title %}{% endblock %}
+        </div>
+      </header>
+      <section class="dashboard-content">
+        {% block dashboard_content %}{% endblock %}
+      </section>
     </div>
-    <script src="{% static 'core/js/sidebar.js' %}"></script>
-  {% else %}
-    {% block dashboard_content %}{% endblock %}
-  {% endif %}
+  </div>
+  <script src="{% static 'core/js/sidebar.js' %}"></script>
 {% endblock %}
