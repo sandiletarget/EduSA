@@ -1,21 +1,21 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>My Progress</title>
-</head>
-<body>
-    <h1>My Progress</h1>
+{% extends "core/base_dashboard.html" %}
 
-    <ul>
+{% block dashboard_content %}
+<section class="dashboard-card">
+    <h1 class="dashboard-title">My Progress</h1>
+    <p class="dashboard-muted mt-2">Track completed lessons and marks.</p>
+
+    <ul class="mt-6 space-y-3">
         {% for p in progress %}
-            <li>
-                <strong>{{ p.lesson.title }}</strong> – {{ p.mark }}%
+            <li class="rounded-xl border border-slate-100 p-4">
+                <strong class="text-slate-900">{{ p.lesson.title }}</strong>
+                <span class="ml-2 text-slate-500">– {{ p.mark }}%</span>
             </li>
         {% empty %}
-            <li>No marks yet.</li>
+            <li class="rounded-xl border border-dashed border-slate-200 p-4 text-slate-500">
+                No marks yet.
+            </li>
         {% endfor %}
     </ul>
-
-    <a href="/logout/">Logout</a>
-</body>
-</html>
+</section>
+{% endblock %}

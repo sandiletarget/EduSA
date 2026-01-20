@@ -1,0 +1,12 @@
+{# Teacher navigation shown only after login. #}
+<nav class="dashboard-nav" aria-label="Teacher navigation">
+  <ul class="dashboard-nav__list">
+    <li><a class="dashboard-nav__link" href="{% url 'teacher_dashboard' %}">Dashboard</a></li>
+    <li><a class="dashboard-nav__link" href="{% url 'classes:class_create' %}">Classes</a></li>
+    <li><a class="dashboard-nav__link" href="{% url 'lesson_add' %}">Lessons</a></li>
+    <li><a class="dashboard-nav__link" href="{% url 'classes:class_create' %}">Live Sessions</a></li>
+    <li><a class="dashboard-nav__link" href="{% url 'teacher_quiz_results' %}">Students</a></li>
+    <li><a class="dashboard-nav__link" href="{% url 'choose_role' %}">Settings</a></li>
+    <li><a class="dashboard-nav__link" href="{% url 'logout' %}">Logout</a></li>
+  </ul>
+</nav>

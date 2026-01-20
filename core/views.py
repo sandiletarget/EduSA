@@ -12,7 +12,7 @@ from classes.models import Class as Classroom, ClassMembership
 
 from .accounts.decorators import student_required
 from .forms import ExamForm, JoinClassForm
-from .models import Exam, Lesson, QuizResult
+from .models import Exam, Lesson, Progress, QuizResult
 from .utils import ROLE_DASHBOARD, dashboard_for_user, resolve_user_role
 
 
@@ -155,6 +155,7 @@ def teacher_dashboard(request):
         "lessons": lessons,
         "classes": classes,
         "exams": exams,
+        "role_theme": "teacher",
     })
 
 
@@ -216,6 +217,17 @@ def student_dashboard(request):
         "lessons": lessons,
         "classrooms": classrooms,
         "exams": exams,
+        "role_theme": "student",
+    })
+
+
+@login_required
+@student_required
+def student_progress(request):
+    progress = Progress.objects.filter(student=request.user, completed=True).select_related("lesson")
+    return render(request, "core/student_progress.html", {
+        "progress": progress,
+        "role_theme": "student",
     })
 
 

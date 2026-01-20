@@ -1,0 +1,12 @@
+{# Student navigation shown only after login. #}
+<nav class="dashboard-nav" aria-label="Student navigation">
+  <ul class="dashboard-nav__list">
+    <li><a class="dashboard-nav__link" href="{% url 'student_dashboard' %}">Dashboard</a></li>
+    <li><a class="dashboard-nav__link" href="{% url 'classes:join_class' %}">My Classes</a></li>
+    <li><a class="dashboard-nav__link" href="{% url 'student_lessons' %}">Lessons</a></li>
+    <li><a class="dashboard-nav__link" href="{% url 'classes:join_class' %}">Live Sessions</a></li>
+    <li><a class="dashboard-nav__link" href="{% url 'student_progress' %}">Progress</a></li>
+    <li><a class="dashboard-nav__link" href="{% url 'choose_role' %}">Profile</a></li>
+    <li><a class="dashboard-nav__link" href="{% url 'logout' %}">Logout</a></li>
+  </ul>
+</nav>
