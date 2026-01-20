@@ -1,0 +1,41 @@
+{# Teacher sidebar navigation. #}
+{% with path=request.path %}
+<div class="sidebar-brand">
+  <div class="sidebar-logo">🎓</div>
+  <div>
+    <p class="sidebar-app">EduSA</p>
+    <p class="sidebar-role">Teacher</p>
+  </div>
+</div>
+
+<nav class="sidebar-nav" aria-label="Teacher navigation">
+  <a class="sidebar-link{% if path == '/teacher/' %} is-active{% endif %}" href="{% url 'teacher_dashboard' %}">
+    <span class="sidebar-icon">🏠</span>
+    Dashboard
+  </a>
+  <a class="sidebar-link{% if path|slice:':9' == '/classes/' %} is-active{% endif %}" href="{% url 'classes:class_create' %}">
+    <span class="sidebar-icon">🏫</span>
+    Classes
+  </a>
+  <a class="sidebar-link{% if path|slice:':9' == '/teacher/' %} is-active{% endif %}" href="{% url 'lesson_add' %}">
+    <span class="sidebar-icon">📘</span>
+    Lessons
+  </a>
+  <a class="sidebar-link" href="{% url 'classes:class_create' %}">
+    <span class="sidebar-icon">📡</span>
+    Live Sessions
+  </a>
+  <a class="sidebar-link" href="{% url 'teacher_quiz_results' %}">
+    <span class="sidebar-icon">👥</span>
+    Students
+  </a>
+  <a class="sidebar-link" href="{% url 'choose_role' %}">
+    <span class="sidebar-icon">⚙️</span>
+    Settings
+  </a>
+  <a class="sidebar-link" href="{% url 'logout' %}">
+    <span class="sidebar-icon">🚪</span>
+    Logout
+  </a>
+</nav>
+{% endwith %}

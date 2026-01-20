@@ -8,20 +8,36 @@
 {% endblock %}
 
 {% block body_class %}
-  dashboard-body
-  {% if role_theme == "teacher" %} teacher-theme{% elif role_theme == "student" %} student-theme{% endif %}
+dashboard-body{% if role_theme == "teacher" %} teacher-theme{% elif role_theme == "student" %} student-theme{% endif %}
 {% endblock %}
 
 {% block content %}
   {% if request.user.is_authenticated %}
-    {% if role_theme == "teacher" %}
-      {% include "core/teacher_navbar.html" %}
-    {% elif role_theme == "student" %}
-      {% include "core/student_navbar.html" %}
-    {% endif %}
-  {% endif %}
+    <div class="dashboard-layout">
+      <aside class="dashboard-sidebar" id="dashboardSidebar">
+        {% if role_theme == "teacher" %}
+          {% include "core/teacher_sidebar.html" %}
+        {% elif role_theme == "student" %}
+          {% include "core/student_sidebar.html" %}
+        {% endif %}
+      </aside>
 
-  <main class="dashboard-container">
+      <div class="dashboard-main">
+        <header class="dashboard-topbar">
+          <button class="sidebar-toggle" type="button" data-sidebar-toggle aria-label="Toggle navigation">
+            ☰
+          </button>
+          <div class="dashboard-topbar__title">
+            {% block dashboard_title %}{% endblock %}
+          </div>
+        </header>
+        <section class="dashboard-content">
+          {% block dashboard_content %}{% endblock %}
+        </section>
+      </div>
+    </div>
+    <script src="{% static 'core/js/sidebar.js' %}"></script>
+  {% else %}
     {% block dashboard_content %}{% endblock %}
-  </main>
+  {% endif %}
 {% endblock %}

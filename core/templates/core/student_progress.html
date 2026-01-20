@@ -1,21 +1,24 @@
 {% extends "core/base_dashboard.html" %}
 
-{% block dashboard_content %}
-<section class="dashboard-card">
-    <h1 class="dashboard-title">My Progress</h1>
-    <p class="dashboard-muted mt-2">Track completed lessons and marks.</p>
+{% block dashboard_title %}Progress{% endblock %}
 
-    <ul class="mt-6 space-y-3">
+{% block dashboard_content %}
+<section class="panel">
+    <div class="panel__header">
+        <h2>My Progress</h2>
+        <span class="muted">Completed lessons</span>
+    </div>
+    <div class="panel__body">
         {% for p in progress %}
-            <li class="rounded-xl border border-slate-100 p-4">
-                <strong class="text-slate-900">{{ p.lesson.title }}</strong>
-                <span class="ml-2 text-slate-500">– {{ p.mark }}%</span>
-            </li>
+            <div class="panel-item">
+                <div>
+                    <h3>{{ p.lesson.title }}</h3>
+                    <p>{{ p.mark }}%</p>
+                </div>
+            </div>
         {% empty %}
-            <li class="rounded-xl border border-dashed border-slate-200 p-4 text-slate-500">
-                No marks yet.
-            </li>
+            <p class="panel-empty">No marks yet.</p>
         {% endfor %}
-    </ul>
+    </div>
 </section>
 {% endblock %}
