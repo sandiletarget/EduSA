@@ -1,0 +1,8 @@
+{# Mobile top navbar for teachers #}
+<nav class="mobile-navbar" aria-label="Teacher mobile navigation">
+  <a href="{% url 'teacher_dashboard' %}">Dashboard</a>
+  <a href="{% url 'classes:class_create' %}">My Classes</a>
+  <a href="{% url 'lesson_add' %}">Lessons</a>
+  <a href="{% url 'classes:live_class_room' classroom.pk %}">Live</a>
+  <a href="{% url 'logout' %}">Logout</a>
+</nav>

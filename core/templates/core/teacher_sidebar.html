@@ -15,15 +15,19 @@
   </a>
   <a class="sidebar-link{% if path|slice:':9' == '/classes/' %} is-active{% endif %}" href="{% url 'classes:class_create' %}">
     <span class="sidebar-icon">🏫</span>
-    Classes
+    My Classes
+  </a>
+  <a class="sidebar-link{% if path == '/classes/create/' %} is-active{% endif %}" href="{% url 'classes:class_create' %}">
+    <span class="sidebar-icon">➕</span>
+    Create Class
+  </a>
+  <a class="sidebar-link" href="{% url 'classes:class_create' %}">
+    <span class="sidebar-icon">📡</span>
+    Live Session
   </a>
   <a class="sidebar-link{% if path|slice:':9' == '/teacher/' %} is-active{% endif %}" href="{% url 'lesson_add' %}">
     <span class="sidebar-icon">📘</span>
     Lessons
-  </a>
-  <a class="sidebar-link" href="{% url 'classes:class_create' %}">
-    <span class="sidebar-icon">📡</span>
-    Live Sessions
   </a>
   <a class="sidebar-link" href="{% url 'teacher_quiz_results' %}">
     <span class="sidebar-icon">👥</span>

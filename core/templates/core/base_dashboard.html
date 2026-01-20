@@ -29,6 +29,11 @@ dashboard-body{% if role_theme == "teacher" %} teacher-theme{% elif role_theme =
         <div class="dashboard-topbar__title">
           {% block dashboard_title %}{% endblock %}
         </div>
+        {% if role_theme == "teacher" %}
+          {% include "core/teacher_navbar_mobile.html" %}
+        {% elif role_theme == "student" %}
+          {% include "core/student_navbar_mobile.html" %}
+        {% endif %}
       </header>
       <section class="dashboard-content">
         {% block dashboard_content %}{% endblock %}

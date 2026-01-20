@@ -1,0 +1,8 @@
+{# Mobile top navbar for students #}
+<nav class="mobile-navbar" aria-label="Student mobile navigation">
+  <a href="{% url 'student_dashboard' %}">Dashboard</a>
+  <a href="{% url 'classes:join_class' %}">My Classes</a>
+  <a href="{% url 'student_lessons' %}">Lessons</a>
+  <a href="{% url 'classes:join_class' %}">Live</a>
+  <a href="{% url 'logout' %}">Logout</a>
+</nav>
