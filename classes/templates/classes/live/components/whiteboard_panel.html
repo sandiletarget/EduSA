@@ -1,0 +1,17 @@
+<section class="side-panel" data-panel="whiteboard">
+  <header class="side-panel__header">
+    <h2>Whiteboard</h2>
+    <button class="panel-close" type="button" data-panel-close>×</button>
+  </header>
+  <div class="side-panel__toolbar">
+    <button type="button" class="mini-btn">✏️ Pen</button>
+    <button type="button" class="mini-btn">🧽 Eraser</button>
+    <button type="button" class="mini-btn">🗑️ Clear</button>
+    {% if is_teacher %}
+      <button type="button" class="mini-btn">Allow drawing</button>
+    {% endif %}
+  </div>
+  <div class="whiteboard-canvas">
+    <p>Whiteboard canvas placeholder</p>
+  </div>
+</section>

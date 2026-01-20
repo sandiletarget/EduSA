@@ -1,0 +1,17 @@
+<header class="live-topbar">
+  <div class="live-topbar__left">
+    <div class="live-badge">● LIVE</div>
+    <div>
+      <h1 class="live-title">{{ classroom.name }}</h1>
+      <p class="live-subtitle">Class code: {{ classroom.passcode }}</p>
+    </div>
+  </div>
+  <div class="live-topbar__right">
+    <span class="live-timer">{{ session_duration }}</span>
+    {% if is_teacher %}
+      <span class="live-role">Host</span>
+    {% else %}
+      <span class="live-role">Participant</span>
+    {% endif %}
+  </div>
+</header>

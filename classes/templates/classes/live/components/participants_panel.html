@@ -1,0 +1,22 @@
+<section class="side-panel" data-panel="participants">
+  <header class="side-panel__header">
+    <h2>Participants</h2>
+    <button class="panel-close" type="button" data-panel-close>×</button>
+  </header>
+  <div class="side-panel__body">
+    <div class="participant-item">
+      <span>{{ classroom.teacher.get_full_name|default:classroom.teacher.username }}</span>
+      <span class="participant-role">Host</span>
+    </div>
+    {% for membership in participants %}
+      <div class="participant-item">
+        <span>{{ membership.learner.get_full_name|default:membership.learner.username }}</span>
+        {% if is_teacher %}
+          <button type="button" class="mini-btn">Remove</button>
+        {% endif %}
+      </div>
+    {% empty %}
+      <p class="panel-empty">No participants yet.</p>
+    {% endfor %}
+  </div>
+</section>

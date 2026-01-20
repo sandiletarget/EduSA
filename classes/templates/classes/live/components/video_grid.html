@@ -1,0 +1,27 @@
+<section class="video-stage">
+  <div class="video-main">
+    <div class="video-tile active-speaker">
+      <div class="video-placeholder">
+        <span>Active Speaker / Screen Share</span>
+      </div>
+      <div class="video-label">{{ classroom.teacher.get_full_name|default:classroom.teacher.username }}</div>
+    </div>
+  </div>
+
+  <div class="video-grid">
+    {% for membership in participants %}
+      <div class="video-tile">
+        <div class="video-placeholder">
+          <span>Camera</span>
+        </div>
+        <div class="video-label">{{ membership.learner.get_full_name|default:membership.learner.username }}</div>
+      </div>
+    {% empty %}
+      <div class="video-tile">
+        <div class="video-placeholder">
+          <span>No participants yet</span>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+</section>

@@ -70,6 +70,28 @@ def join_live_session(request, pk):
 
 
 @login_required
+def live_class_room(request, pk):
+    classroom = get_object_or_404(Class, pk=pk)
+    is_teacher = request.user == classroom.teacher
+    membership = ClassMembership.objects.filter(classroom=classroom, learner=request.user).first()
+
+    if not (is_teacher or membership):
+        raise PermissionDenied
+
+    participants = classroom.memberships.select_related("learner").order_by("joined_at")
+    active_session = classroom.live_sessions.filter(is_active=True).order_by("-started_at").first()
+
+    template_name = "classes/live/live_class_teacher.html" if is_teacher else "classes/live/live_class_student.html"
+    return render(request, template_name, {
+        "classroom": classroom,
+        "is_teacher": is_teacher,
+        "participants": participants,
+        "active_session": active_session,
+        "session_duration": "00:12:45",
+    })
+
+
+@login_required
 def join_class(request):
     form = JoinClassForm(request.POST or None)
     if request.method == "POST" and form.is_valid():

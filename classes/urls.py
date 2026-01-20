@@ -9,5 +9,6 @@ urlpatterns = [
     path("<int:pk>/", views.class_detail, name="class_detail"),
     path("<int:pk>/live/start/", views.start_live_session, name="start_live_session"),
     path("<int:pk>/live/join/", views.join_live_session, name="join_live_session"),
+    path("<int:pk>/live/room/", views.live_class_room, name="live_class_room"),
     path("join/", views.join_class, name="join_class")
 ]
