@@ -12,15 +12,49 @@
   <div class="live-class-layout" data-role="{% if is_teacher %}teacher{% else %}student{% endif %}">
     {% include "classes/live/components/top_bar.html" %}
 
-    <div class="live-class-main">
-      <div class="live-class-stage">
-        {% include "classes/live/components/video_grid.html" %}
-      </div>
+    <div class="live-class-content">
+      <aside class="live-tools" aria-label="Class tools">
+        <p class="live-tools__title">Tools</p>
+        <button class="tool-btn" type="button" data-panel-toggle="whiteboard">
+          <span class="tool-icon">📝</span>
+          <span class="tool-label">Whiteboard</span>
+        </button>
+        <button class="tool-btn" type="button" data-panel-toggle="notes">
+          <span class="tool-icon">📒</span>
+          <span class="tool-label">Notes</span>
+        </button>
+        <button class="tool-btn" type="button" data-panel-toggle="chat">
+          <span class="tool-icon">💬</span>
+          <span class="tool-label">Chat</span>
+        </button>
+        <button class="tool-btn" type="button" data-panel-toggle="files">
+          <span class="tool-icon">📂</span>
+          <span class="tool-label">Files</span>
+        </button>
+        <button class="tool-btn" type="button" data-panel-toggle="ai">
+          <span class="tool-icon">🤖</span>
+          <span class="tool-label">AI Assistant</span>
+        </button>
+      </aside>
 
-      <aside class="live-class-panels" id="livePanels">
-        {% include "classes/live/components/chat_panel.html" %}
-        {% include "classes/live/components/participants_panel.html" %}
-        {% include "classes/live/components/whiteboard_panel.html" %}
+      <main class="live-class-center" aria-label="Classroom">
+        <div class="live-class-stage">
+          {% include "classes/live/components/video_grid.html" %}
+        </div>
+      </main>
+
+      <aside class="live-class-right" aria-label="Participants and panels">
+        <div class="side-panel side-panel--static is-collapsed" data-panel="participants">
+          {% include "classes/live/components/participants_panel.html" %}
+        </div>
+
+        <div class="live-class-panels" id="livePanels">
+          {% include "classes/live/components/chat_panel.html" %}
+          {% include "classes/live/components/whiteboard_panel.html" %}
+          {% include "classes/live/components/notes_panel.html" %}
+          {% include "classes/live/components/files_panel.html" %}
+          {% include "classes/live/components/ai_panel.html" %}
+        </div>
       </aside>
     </div>
 

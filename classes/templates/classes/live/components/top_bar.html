@@ -1,13 +1,19 @@
 <header class="live-topbar">
   <div class="live-topbar__left">
-    <div class="live-badge">● LIVE</div>
+    <div class="live-status">
+      <span class="live-badge">LIVE</span>
+      <span class="live-connection"><span class="status-dot"></span>Connected</span>
+    </div>
     <div>
       <h1 class="live-title">{{ classroom.name }}</h1>
       <p class="live-subtitle">Class code: {{ classroom.passcode }}</p>
     </div>
   </div>
   <div class="live-topbar__right">
-    <span class="live-timer">{{ session_duration }}</span>
+    <div class="live-meta">
+      <span class="live-timer">{{ session_duration }}</span>
+      <span class="live-meta-label">Session time</span>
+    </div>
     {% if is_teacher %}
       <span class="live-role">Host</span>
     {% else %}
