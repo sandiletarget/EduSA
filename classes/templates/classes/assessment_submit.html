@@ -1,0 +1,25 @@
+{% extends "core/base.html" %}
+
+{% block content %}
+<div class="classroom-page">
+  {% include "core/components/grade_nav.html" %}
+  <section class="classroom-panel">
+    <div class="panel-header">
+      <div>
+        <p class="panel-kicker">Submit Assessment</p>
+        <h2>{{ assessment.title }}</h2>
+      </div>
+    </div>
+    <div class="panel__body">
+      <p class="muted">Allowed types: {{ assessment.allowed_file_types }}</p>
+      <form method="post" enctype="multipart/form-data" class="panel-item">
+        {% csrf_token %}
+        {{ form.non_field_errors }}
+        <label>Upload file</label>
+        {{ form.submission_file }}
+        <button class="btn btn-primary" type="submit">Upload</button>
+      </form>
+    </div>
+  </section>
+</div>
+{% endblock %}

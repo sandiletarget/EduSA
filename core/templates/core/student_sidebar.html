@@ -29,6 +29,10 @@
     <span class="sidebar-icon">📘</span>
     Lessons
   </a>
+  <a class="sidebar-link{% if path|slice:':15' == '/lessons/catalog' %} is-active{% endif %}" href="{% url 'lesson_catalog' %}">
+    <span class="sidebar-icon">🗂️</span>
+    NSC Lessons
+  </a>
   <a class="sidebar-link{% if path|slice:':18' == '/student/progress' %} is-active{% endif %}" href="{% url 'student_progress' %}">
     <span class="sidebar-icon">📈</span>
     Progress

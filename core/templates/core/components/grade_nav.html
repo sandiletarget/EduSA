@@ -1,0 +1,9 @@
+<nav class="grade-nav" aria-label="Grades">
+  <div class="grade-nav__track">
+    {% for grade in nav_grades %}
+      <a class="grade-nav__item grade-{{ grade.number }}" href="{% url 'lesson_catalog' %}?grade={{ grade.number }}">
+        Grade {{ grade.number }}
+      </a>
+    {% endfor %}
+  </div>
+</nav>

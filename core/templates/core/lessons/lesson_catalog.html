@@ -1,0 +1,58 @@
+{% extends "core/base_student.html" %}
+
+{% block dashboard_content %}
+<section class="panel">
+  <div class="panel__header">
+    <h2>NSC Lessons</h2>
+    {% if grade %}
+      <span class="chip">{{ grade }}</span>
+    {% endif %}
+  </div>
+  <div class="panel__body">
+    <form method="get" class="panel-item" style="align-items:center;">
+      <div>
+        <label class="muted">Grade</label>
+        <select name="grade" class="form-select">
+          {% for item in nav_grades %}
+            <option value="{{ item.number }}" {% if grade and item.number == grade.number %}selected{% endif %}>Grade {{ item.number }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div>
+        <label class="muted">Subject</label>
+        <select name="subject" class="form-select">
+          <option value="">All subjects</option>
+          {% for subject in subjects %}
+            <option value="{{ subject.slug }}" {% if request.GET.subject == subject.slug %}selected{% endif %}>{{ subject.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <button class="btn btn-primary" type="submit">Filter</button>
+    </form>
+
+    {% for card in lesson_cards %}
+      {% with lesson=card.lesson progress=card.progress %}
+      <div class="panel-item">
+        <div>
+          <h3>{{ lesson.title }}</h3>
+          <p>{{ lesson.subject_ref.name|default:lesson.subject }}</p>
+          {% if lesson.topic_ref %}
+            <p class="muted">{{ lesson.topic_ref.name }}</p>
+          {% endif %}
+        </div>
+        <div>
+          {% if progress and progress.completed %}
+            <span class="chip">Completed</span>
+          {% elif progress %}
+            <span class="chip">In progress</span>
+          {% endif %}
+          <a class="btn btn-outline" href="{% url 'lesson_detail' lesson.id %}">Open</a>
+        </div>
+      </div>
+      {% endwith %}
+    {% empty %}
+      <p class="panel-empty">No lessons found for this grade/subject.</p>
+    {% endfor %}
+  </div>
+</section>
+{% endblock %}

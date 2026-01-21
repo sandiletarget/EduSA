@@ -11,6 +11,7 @@
 {% block body_class %}live-class-body{% endblock %}
 
 {% block content %}
+  {% include "core/components/grade_nav.html" %}
   <div class="live-class-layout" data-role="{% if is_teacher %}teacher{% else %}student{% endif %}" data-room-id="{{ classroom.id }}" data-username="{{ request.user.username }}">
     {% include "classes/live/components/top_bar.html" %}
 

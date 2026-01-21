@@ -2,15 +2,17 @@ import logging
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.conf import settings
 from django.core.exceptions import PermissionDenied, ValidationError
 from django.db import DatabaseError
+from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 
 from core.forms import JoinClassForm
 from core.utils import resolve_user_role
-from .forms import ClassForm
-from .models import Class, ClassMembership, LiveSession
+from .forms import ClassForm, AssessmentForm, AssessmentSubmissionForm
+from .models import Assessment, AssessmentSubmission, Class, ClassMembership, LiveSession
 
 
 logger = logging.getLogger(__name__)
@@ -139,3 +141,102 @@ def create_class(request):
             return redirect("classes:class_detail", pk=classroom.pk)
 
     return render(request, "classes/class_form.html", {"form": form})
+
+
+@login_required
+def assessment_list(request, pk):
+    classroom = get_object_or_404(Class, pk=pk)
+    is_teacher = request.user == classroom.teacher
+    membership = ClassMembership.objects.filter(classroom=classroom, learner=request.user).first()
+
+    if not (is_teacher or membership):
+        raise PermissionDenied
+
+    assessments = classroom.assessments.select_related("teacher").all()
+    submissions = AssessmentSubmission.objects.filter(student=request.user, assessment__in=assessments)
+    submission_map = {submission.assessment_id: submission for submission in submissions}
+    assessment_cards = [
+        {
+            "assessment": assessment,
+            "submission": submission_map.get(assessment.id),
+        }
+        for assessment in assessments
+    ]
+
+    return render(request, "classes/assessment_list.html", {
+        "classroom": classroom,
+        "assessment_cards": assessment_cards,
+        "is_teacher": is_teacher,
+    })
+
+
+@login_required
+def assessment_create(request, pk):
+    classroom = get_object_or_404(Class, pk=pk)
+    if request.user != classroom.teacher:
+        raise PermissionDenied
+
+    form = AssessmentForm(request.POST or None)
+    if request.method == "POST" and form.is_valid():
+        assessment = form.save(commit=False)
+        assessment.classroom = classroom
+        assessment.teacher = request.user
+        assessment.save()
+        messages.success(request, "Assessment created successfully.")
+        return redirect("classes:assessment_list", pk=classroom.pk)
+
+    return render(request, "classes/assessment_form.html", {
+        "classroom": classroom,
+        "form": form,
+    })
+
+
+@login_required
+def assessment_submit(request, assessment_id):
+    assessment = get_object_or_404(Assessment, pk=assessment_id)
+    classroom = assessment.classroom
+    membership = ClassMembership.objects.filter(classroom=classroom, learner=request.user).first()
+    if not membership:
+        raise PermissionDenied
+
+    form = AssessmentSubmissionForm(
+        request.POST or None,
+        request.FILES or None,
+        allowed_extensions=assessment.allowed_extensions(),
+    )
+
+    if request.method == "POST" and form.is_valid():
+        submission, _ = AssessmentSubmission.objects.update_or_create(
+            assessment=assessment,
+            student=request.user,
+            defaults={
+                "submission_file": form.cleaned_data["submission_file"],
+                "submitted_at": timezone.now(),
+            },
+        )
+
+        send_mail(
+            subject=f"Assessment submission confirmation: {assessment.title}",
+            message=(
+                f"Hi {request.user.get_full_name() or request.user.username},\n\n"
+                f"Your submission has been received.\n\n"
+                f"Name: {request.user.get_full_name() or request.user.username}\n"
+                f"Grade: {assessment.grade_ref or 'N/A'}\n"
+                f"Subject: {assessment.subject_ref or 'N/A'}\n"
+                f"Assessment: {assessment.title}\n"
+                f"Submitted at: {submission.submitted_at:%Y-%m-%d %H:%M}\n\n"
+                "Thank you."
+            ),
+            from_email=getattr(settings, "DEFAULT_FROM_EMAIL", None),
+            recipient_list=[request.user.email],
+            fail_silently=True,
+        )
+
+        messages.success(request, "Submission uploaded successfully.")
+        return redirect("classes:assessment_list", pk=classroom.pk)
+
+    return render(request, "classes/assessment_submit.html", {
+        "assessment": assessment,
+        "classroom": classroom,
+        "form": form,
+    })

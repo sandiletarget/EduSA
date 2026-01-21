@@ -3,16 +3,18 @@ from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import Group
 from django.contrib.auth.decorators import login_required, user_passes_test
+from django.db import models
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.template import engines
+from django.utils import timezone
 from django.utils.http import url_has_allowed_host_and_scheme
 
 from classes.models import Class as Classroom, ClassMembership
 
 from .accounts.decorators import student_required
 from .forms import ExamForm, JoinClassForm
-from .models import Exam, Formula, Lesson, Progress, QuizResult
+from .models import Exam, Formula, Grade, Lesson, Progress, QuizResult, StudentProgress, Subject
 from .utils import ROLE_DASHBOARD, dashboard_for_user, resolve_user_role
 
 
@@ -230,6 +232,60 @@ def student_dashboard(request):
 
 
 @login_required
+def lesson_catalog(request):
+    grade_number = request.GET.get("grade")
+    subject_slug = request.GET.get("subject")
+
+    grade = Grade.objects.filter(number=grade_number).first() if grade_number else Grade.objects.first()
+    subjects = Subject.objects.all()
+
+    lessons = Lesson.objects.all()
+    if grade:
+        lessons = lessons.filter(models.Q(grade_ref=grade) | models.Q(grade=str(grade.number)))
+    if subject_slug:
+        lessons = lessons.filter(models.Q(subject_ref__slug=subject_slug) | models.Q(subject__iexact=subject_slug.replace("-", " ")))
+
+    progress_map = {
+        progress.lesson_id: progress
+        for progress in StudentProgress.objects.filter(student=request.user, lesson__in=lessons)
+    }
+
+    lesson_cards = [
+        {
+            "lesson": lesson,
+            "progress": progress_map.get(lesson.id),
+        }
+        for lesson in lessons
+    ]
+
+    return render(request, "core/lessons/lesson_catalog.html", {
+        "grade": grade,
+        "subjects": subjects,
+        "lesson_cards": lesson_cards,
+    })
+
+
+@login_required
+def lesson_detail(request, pk):
+    lesson = get_object_or_404(Lesson, pk=pk)
+    progress, _ = StudentProgress.objects.get_or_create(student=request.user, lesson=lesson)
+    progress.last_opened_at = timezone.now()
+    progress.save(update_fields=["last_opened_at"])
+
+    if request.method == "POST":
+        progress.completed = True
+        progress.completed_at = timezone.now()
+        progress.save(update_fields=["completed", "completed_at"])
+        messages.success(request, "Lesson marked as completed.")
+        return redirect("lesson_detail", pk=lesson.pk)
+
+    return render(request, "core/lessons/lesson_detail.html", {
+        "lesson": lesson,
+        "progress": progress,
+    })
+
+
+@login_required
 def formulas_api(request):
     grade = request.GET.get("grade")
     subject = request.GET.get("subject")
@@ -257,6 +313,30 @@ def formulas_api(request):
     ]
 
     return JsonResponse({"formulas": payload})
+
+
+@login_required
+def lessons_api(request):
+    grade = request.GET.get("grade")
+    subject = request.GET.get("subject")
+
+    lessons = Lesson.objects.all()
+    if grade:
+        lessons = lessons.filter(models.Q(grade_ref__number=grade) | models.Q(grade=grade))
+    if subject:
+        lessons = lessons.filter(models.Q(subject_ref__slug=subject) | models.Q(subject__iexact=subject.replace("-", " ")))
+
+    payload = [
+        {
+            "id": lesson.id,
+            "title": lesson.title,
+            "grade": lesson.grade_ref.number if lesson.grade_ref else lesson.grade,
+            "subject": lesson.subject_ref.slug if lesson.subject_ref else lesson.subject,
+            "topic": lesson.topic_ref.name if lesson.topic_ref else "",
+        }
+        for lesson in lessons
+    ]
+    return JsonResponse({"lessons": payload})
 
 
 @login_required

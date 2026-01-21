@@ -36,6 +36,7 @@ dashboard-body{% if role_theme == "teacher" %} teacher-theme{% elif role_theme =
         {% endif %}
       </header>
       <section class="dashboard-content">
+        {% include "core/components/grade_nav.html" %}
         {% block dashboard_content %}{% endblock %}
       </section>
     </div>

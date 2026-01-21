@@ -1,0 +1,44 @@
+{% extends "core/base.html" %}
+
+{% block content %}
+<div class="classroom-page">
+  {% include "core/components/grade_nav.html" %}
+  <section class="classroom-panel">
+    <div class="panel-header">
+      <div>
+        <p class="panel-kicker">Create Assessment</p>
+        <h2>{{ classroom.name }}</h2>
+      </div>
+    </div>
+    <form method="post" class="panel__body">
+      {% csrf_token %}
+      {{ form.non_field_errors }}
+      <div class="panel-item">
+        <label>Title</label>
+        {{ form.title }}
+      </div>
+      <div class="panel-item">
+        <label>Instructions</label>
+        {{ form.instructions }}
+      </div>
+      <div class="panel-item">
+        <label>Grade</label>
+        {{ form.grade_ref }}
+      </div>
+      <div class="panel-item">
+        <label>Subject</label>
+        {{ form.subject_ref }}
+      </div>
+      <div class="panel-item">
+        <label>Due date</label>
+        {{ form.due_date }}
+      </div>
+      <div class="panel-item">
+        <label>Allowed file types</label>
+        {{ form.allowed_file_types }}
+      </div>
+      <button class="btn btn-primary" type="submit">Create assessment</button>
+    </form>
+  </section>
+</div>
+{% endblock %}

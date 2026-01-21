@@ -3,6 +3,8 @@ from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils.crypto import get_random_string
 
+from core.models import Grade, Subject
+
 from core.utils import resolve_user_role
 
 
@@ -85,3 +87,58 @@ class LiveSession(models.Model):
 
     def __str__(self):
         return f"Live session for {self.classroom.name}"
+
+
+class Assessment(models.Model):
+    classroom = models.ForeignKey(
+        Class,
+        on_delete=models.CASCADE,
+        related_name="assessments",
+    )
+    grade_ref = models.ForeignKey(Grade, on_delete=models.SET_NULL, null=True, blank=True, related_name="assessments")
+    subject_ref = models.ForeignKey(Subject, on_delete=models.SET_NULL, null=True, blank=True, related_name="assessments")
+    teacher = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="assessments_created",
+    )
+    title = models.CharField(max_length=200)
+    instructions = models.TextField(blank=True)
+    due_date = models.DateField(null=True, blank=True)
+    allowed_file_types = models.CharField(
+        max_length=200,
+        default="pdf,docx,jpg,jpeg,png",
+        help_text="Comma-separated list of allowed extensions",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ("-created_at",)
+
+    def __str__(self):
+        return self.title
+
+    def allowed_extensions(self):
+        return [ext.strip().lower() for ext in self.allowed_file_types.split(",") if ext.strip()]
+
+
+class AssessmentSubmission(models.Model):
+    assessment = models.ForeignKey(
+        Assessment,
+        on_delete=models.CASCADE,
+        related_name="submissions",
+    )
+    student = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="assessment_submissions",
+    )
+    submission_file = models.FileField(upload_to="assessment_submissions/")
+    submitted_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ("-submitted_at",)
+        unique_together = ("assessment", "student")
+
+    def __str__(self):
+        return f"{self.student} - {self.assessment}"

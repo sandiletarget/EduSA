@@ -1,13 +1,13 @@
 from django.contrib import admin
 
-from .models import Choice, Formula, Lesson, Progress, Question, Quiz, QuizResult
+from .models import Choice, Formula, Grade, Lesson, Progress, Question, Quiz, QuizResult, StudentProgress, Subject, Topic
 
 
 @admin.register(Lesson)
 class LessonAdmin(admin.ModelAdmin):
     list_display = ("title", "subject", "grade", "created_at")
-    list_filter = ("subject", "grade")
-    search_fields = ("title", "content", "subject")
+    list_filter = ("subject", "grade", "subject_ref", "grade_ref")
+    search_fields = ("title", "content", "subject", "notes_text")
     ordering = ("-created_at",)
 
 
@@ -49,3 +49,29 @@ class FormulaAdmin(admin.ModelAdmin):
     list_filter = ("grade", "subject")
     search_fields = ("topic", "formula_text", "explanation")
     ordering = ("grade", "subject", "topic")
+
+
+@admin.register(Grade)
+class GradeAdmin(admin.ModelAdmin):
+    list_display = ("number", "label")
+    ordering = ("number",)
+
+
+@admin.register(Subject)
+class SubjectAdmin(admin.ModelAdmin):
+    list_display = ("name", "slug")
+    search_fields = ("name", "slug")
+
+
+@admin.register(Topic)
+class TopicAdmin(admin.ModelAdmin):
+    list_display = ("name", "subject", "grade")
+    list_filter = ("subject", "grade")
+    search_fields = ("name",)
+
+
+@admin.register(StudentProgress)
+class StudentProgressAdmin(admin.ModelAdmin):
+    list_display = ("student", "lesson", "completed", "completed_at", "last_opened_at")
+    list_filter = ("completed",)
+    search_fields = ("student__username", "lesson__title")

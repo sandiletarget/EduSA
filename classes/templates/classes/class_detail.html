@@ -9,6 +9,7 @@
 
 {% block content %}
 <div class="classroom-page">
+    {% include "core/components/grade_nav.html" %}
     <header class="classroom-hero">
         <div>
             <span class="classroom-kicker">Classroom</span>
@@ -47,9 +48,11 @@
         {% if is_teacher %}
             <a href="{% url 'lesson_add' %}" class="btn btn-primary">Create Lesson</a>
             <a href="{% url 'classes:start_live_session' classroom.pk %}" class="btn btn-outline">Start Live Session</a>
+            <a href="{% url 'classes:assessment_list' classroom.pk %}" class="btn btn-outline">Assessments</a>
         {% else %}
             <a href="{% url 'student_lessons' %}" class="btn btn-primary">View Lessons</a>
             <a href="{% url 'classes:join_live_session' classroom.pk %}" class="btn btn-outline">Join Live Session</a>
+            <a href="{% url 'classes:assessment_list' classroom.pk %}" class="btn btn-outline">Assessments</a>
         {% endif %}
     </section>
 

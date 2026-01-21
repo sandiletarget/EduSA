@@ -1,0 +1,44 @@
+{% extends "core/base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="classroom-page">
+  {% include "core/components/grade_nav.html" %}
+  <section class="classroom-panel">
+    <div class="panel-header">
+      <div>
+        <p class="panel-kicker">Assessments</p>
+        <h2>{{ classroom.name }}</h2>
+      </div>
+      {% if is_teacher %}
+        <a class="btn btn-primary" href="{% url 'classes:assessment_create' classroom.pk %}">Create assessment</a>
+      {% endif %}
+    </div>
+
+    <div class="panel__body">
+      {% for card in assessment_cards %}
+        {% with assessment=card.assessment submission=card.submission %}
+          <div class="panel-item">
+            <div>
+              <h3>{{ assessment.title }}</h3>
+              <p class="muted">{{ assessment.subject_ref.name|default:"Subject" }} · {{ assessment.grade_ref|default:"Grade" }}</p>
+              {% if assessment.due_date %}
+                <span class="chip">Due {{ assessment.due_date }}</span>
+              {% endif %}
+            </div>
+            <div>
+              {% if submission %}
+                <span class="chip">Submitted</span>
+              {% else %}
+                <a class="btn btn-outline" href="{% url 'classes:assessment_submit' assessment.id %}">Submit</a>
+              {% endif %}
+            </div>
+          </div>
+        {% endwith %}
+      {% empty %}
+        <p class="panel-empty">No assessments available.</p>
+      {% endfor %}
+    </div>
+  </section>
+</div>
+{% endblock %}

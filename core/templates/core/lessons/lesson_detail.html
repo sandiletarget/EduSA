@@ -1,0 +1,56 @@
+{% extends "core/base_student.html" %}
+
+{% block dashboard_content %}
+<section class="panel">
+  <div class="panel__header">
+    <h2>{{ lesson.title }}</h2>
+    {% if progress.completed %}
+      <span class="chip">Completed</span>
+    {% endif %}
+  </div>
+  <div class="panel__body">
+    <p class="muted">{{ lesson.subject_ref.name|default:lesson.subject }}{% if lesson.grade_ref %} · {{ lesson.grade_ref }}{% endif %}</p>
+
+    {% if lesson.notes_text %}
+      <div class="panel-item">
+        <div>
+          <h3>Notes</h3>
+          <p>{{ lesson.notes_text }}</p>
+        </div>
+      </div>
+    {% endif %}
+
+    {% if lesson.notes_file %}
+      <div class="panel-item">
+        <div>
+          <h3>Notes file</h3>
+          <a href="{{ lesson.notes_file.url }}" target="_blank" rel="noopener">Download</a>
+        </div>
+      </div>
+    {% endif %}
+
+    {% if lesson.video_url %}
+      <div class="panel-item">
+        <div>
+          <h3>Video</h3>
+          <a href="{{ lesson.video_url }}" target="_blank" rel="noopener">Watch</a>
+        </div>
+      </div>
+    {% endif %}
+
+    {% if lesson.formula_sheet %}
+      <div class="panel-item">
+        <div>
+          <h3>Formula sheet</h3>
+          <a href="{{ lesson.formula_sheet.url }}" target="_blank" rel="noopener">Open formula sheet</a>
+        </div>
+      </div>
+    {% endif %}
+
+    <form method="post" class="panel-item">
+      {% csrf_token %}
+      <button class="btn btn-primary" type="submit">Mark as completed</button>
+    </form>
+  </div>
+</section>
+{% endblock %}
