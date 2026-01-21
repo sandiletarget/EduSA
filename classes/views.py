@@ -8,6 +8,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 
 from core.forms import JoinClassForm
+from core.utils import resolve_user_role
 from .forms import ClassForm
 from .models import Class, ClassMembership, LiveSession
 
@@ -31,9 +32,6 @@ def class_detail(request, pk):
         "is_teacher": is_teacher,
         "memberships": memberships,
         "active_session": classroom.live_sessions.filter(is_active=True).order_by("-started_at").first(),
-        "jitsi_domain": "meet.jit.si",
-        "jitsi_room": f"edusa-class-{classroom.pk}",
-        "jitsi_display_name": request.user.get_full_name() or request.user.username,
     }
     return render(request, "classes/class_detail.html", context)
 
@@ -50,7 +48,7 @@ def start_live_session(request, pk):
     session.save(update_fields=["is_active", "started_at"])
 
     messages.success(request, "Live session started.")
-    return redirect("classes:class_detail", pk=classroom.pk)
+    return redirect("classes:live_class_room", pk=classroom.pk)
 
 
 @login_required
@@ -66,7 +64,7 @@ def join_live_session(request, pk):
         return redirect("classes:class_detail", pk=classroom.pk)
 
     messages.success(request, "You joined the live session.")
-    return redirect("classes:class_detail", pk=classroom.pk)
+    return redirect("classes:live_class_room", pk=classroom.pk)
 
 
 @login_required
@@ -111,7 +109,7 @@ def join_class(request):
 
 @login_required
 def create_class(request):
-    if not request.user.is_staff:
+    if resolve_user_role(request.user) != "teacher":
         raise PermissionDenied
 
     form = ClassForm(request.POST or None)

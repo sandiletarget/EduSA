@@ -3,6 +3,8 @@ from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils.crypto import get_random_string
 
+from core.utils import resolve_user_role
+
 
 class Class(models.Model):
     teacher = models.ForeignKey(
@@ -32,9 +34,9 @@ class Class(models.Model):
 
     def clean(self):
         super().clean()
-        if self.teacher_id and not self.teacher.is_staff:
+        if self.teacher_id and resolve_user_role(self.teacher) != "teacher":
             raise ValidationError({
-                "teacher": "Only staff members may own classes."
+                "teacher": "Only teacher accounts may own classes."
             })
 
     def save(self, *args, **kwargs):

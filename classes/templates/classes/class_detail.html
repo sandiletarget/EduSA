@@ -76,7 +76,8 @@
 
         {% if active_session %}
             <div class="panel-media">
-                <div id="jitsi-meet" class="jitsi-shell"></div>
+                <div class="panel-note">Live session is active. Join the built-in classroom to continue.</div>
+                <a class="btn btn-primary" href="{% url 'classes:live_class_room' classroom.pk %}">Open Live Classroom</a>
             </div>
         {% else %}
             <p class="panel-note">The teacher has not started the live session yet.</p>
@@ -100,53 +101,4 @@
         </ul>
     </section>
 </div>
-{% if active_session %}
-<script src="https://meet.jit.si/external_api.js"></script>
-<script>
-    (function () {
-        var parentNode = document.querySelector("#jitsi-meet");
-        if (!parentNode || !window.JitsiMeetExternalAPI) {
-            return;
-        }
-
-        var domain = "{{ jitsi_domain|escapejs }}";
-        var roomName = "{{ jitsi_room|escapejs }}";
-        var displayName = "{{ jitsi_display_name|escapejs }}";
-        var isTeacher = {{ is_teacher|yesno:"true,false" }};
-        var startMuted = !isTeacher;
-
-        new JitsiMeetExternalAPI(domain, {
-            roomName: roomName,
-            parentNode: parentNode,
-            userInfo: {
-                displayName: displayName,
-            },
-            configOverwrite: {
-                prejoinPageEnabled: false,
-                startWithAudioMuted: startMuted,
-                startWithVideoMuted: startMuted,
-                disableDeepLinking: true,
-                enableLobby: false,
-                enableUserRolesBasedOnToken: false,
-                disableModeratorIndicator: true,
-                disableProfile: true,
-                disableInviteFunctions: true,
-            },
-            interfaceConfigOverwrite: {
-                TOOLBAR_BUTTONS: [
-                    "microphone",
-                    "camera",
-                    "desktop",
-                    "fullscreen",
-                    "tileview",
-                    "chat",
-                    "raisehand",
-                    "participants-pane",
-                    "hangup",
-                ],
-            },
-        });
-    })();
-</script>
-{% endif %}
 {% endblock %}
