@@ -209,6 +209,29 @@
   box-shadow: 0 6px 16px rgba(15, 23, 42, 0.06);
 }
 
+.video-element {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 12px;
+  display: none;
+}
+
+.video-tile.has-stream .video-element {
+  display: block;
+}
+
+.video-tile.has-stream .video-placeholder {
+  display: none;
+}
+
+.video-tile.is-muted .video-label::after {
+  content: " · Muted";
+  color: var(--live-muted);
+  font-weight: 500;
+  font-size: 0.7rem;
+}
+
 .active-speaker {
   min-height: 320px;
 }

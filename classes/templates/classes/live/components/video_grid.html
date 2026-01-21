@@ -1,6 +1,7 @@
 <section class="video-stage">
   <div class="video-main">
-    <div class="video-tile active-speaker">
+    <div class="video-tile active-speaker" id="screenTile">
+      <video id="screenShare" class="video-element" autoplay playsinline></video>
       <div class="video-placeholder">
         <span>Active Speaker / Screen Share</span>
       </div>
@@ -8,7 +9,14 @@
     </div>
   </div>
 
-  <div class="video-grid">
+  <div class="video-grid" id="videoGrid">
+    <div class="video-tile" id="localTile">
+      <video id="localVideo" class="video-element" autoplay playsinline muted></video>
+      <div class="video-placeholder">
+        <span>Your camera</span>
+      </div>
+      <div class="video-label">You</div>
+    </div>
     {% for membership in participants %}
       <div class="video-tile">
         <div class="video-placeholder">

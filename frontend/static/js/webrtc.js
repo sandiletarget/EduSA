@@ -5,9 +5,22 @@
   if (!layout) return;
 
   var role = layout.getAttribute("data-role");
+  var username = layout.getAttribute("data-username");
   var localStream = null;
+  var activeVideoTrack = null;
+  var screenStream = null;
   var peerConnections = {};
   var videoGrid = document.getElementById("videoGrid");
+  var localVideo = document.getElementById("localVideo");
+  var localTile = document.getElementById("localTile");
+  var screenVideo = document.getElementById("screenShare");
+  var screenTile = document.getElementById("screenTile");
+
+  var micButton = document.querySelector("[data-media-action='mic']");
+  var cameraButton = document.querySelector("[data-media-action='camera']");
+  var screenButton = document.querySelector("[data-media-action='screen']");
+  var handButton = document.querySelector("[data-media-action='hand']");
+  var handRaised = false;
 
   var iceConfig = {
     iceServers: [
@@ -47,20 +60,50 @@
     tile.video.srcObject = stream;
     tile.video.style.display = "block";
     tile.placeholder.style.display = "none";
+    tile.tile.classList.add("has-stream");
   }
 
   async function initLocalMedia() {
+    if (localStream) return localStream;
     localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: true });
-    var selfTile = createVideoTile("local", "You");
-    attachStream(selfTile, localStream);
+    activeVideoTrack = localStream.getVideoTracks()[0] || activeVideoTrack;
+    if (localVideo) {
+      localVideo.srcObject = localStream;
+      localVideo.play().catch(function () {});
+    }
+    if (localTile) {
+      localTile.classList.add("has-stream");
+    }
+    attachLocalTracksToPeers();
+    return localStream;
+  }
+
+  function attachLocalTracksToPeers() {
+    Object.keys(peerConnections).forEach(function (peerId) {
+      var pc = peerConnections[peerId];
+      if (!pc) return;
+
+      var senders = pc.getSenders();
+      var audioTrack = localStream ? localStream.getAudioTracks()[0] : null;
+      var videoTrack = activeVideoTrack || (localStream ? localStream.getVideoTracks()[0] : null);
+
+      if (audioTrack && !senders.some(function (s) { return s.track && s.track.kind === "audio"; })) {
+        pc.addTrack(audioTrack, localStream);
+      }
+      if (videoTrack && !senders.some(function (s) { return s.track && s.track.kind === "video"; })) {
+        pc.addTrack(videoTrack, localStream || new MediaStream([videoTrack]));
+      }
+    });
   }
 
   function createPeerConnection(peerId) {
     var pc = new RTCPeerConnection(iceConfig);
-
-    localStream.getTracks().forEach(function (track) {
-      pc.addTrack(track, localStream);
-    });
+    if (localStream || activeVideoTrack) {
+      var audioTrack = localStream ? localStream.getAudioTracks()[0] : null;
+      var videoTrack = activeVideoTrack || (localStream ? localStream.getVideoTracks()[0] : null);
+      if (audioTrack) pc.addTrack(audioTrack, localStream);
+      if (videoTrack) pc.addTrack(videoTrack, localStream || new MediaStream([videoTrack]));
+    }
 
     pc.onicecandidate = function (event) {
       if (event.candidate) {
@@ -83,11 +126,14 @@
 
   function signalingSend(payload) {
     if (window.signalingSocket && window.signalingSocket.readyState === WebSocket.OPEN) {
+      payload.from = username;
       window.signalingSocket.send(JSON.stringify(payload));
     }
   }
 
   async function handleOffer(data) {
+    if (data.target && data.target !== username) return;
+    if (data.from === username) return;
     var pc = createPeerConnection(data.from);
     await pc.setRemoteDescription(new RTCSessionDescription(data.offer));
     var answer = await pc.createAnswer();
@@ -96,12 +142,16 @@
   }
 
   async function handleAnswer(data) {
+    if (data.target && data.target !== username) return;
+    if (data.from === username) return;
     var pc = peerConnections[data.from];
     if (!pc) return;
     await pc.setRemoteDescription(new RTCSessionDescription(data.answer));
   }
 
   async function handleIce(data) {
+    if (data.target && data.target !== username) return;
+    if (data.from === username) return;
     var pc = peerConnections[data.from];
     if (!pc) return;
     await pc.addIceCandidate(new RTCIceCandidate(data.candidate));
@@ -131,36 +181,117 @@
         chat.appendChild(msg);
       }
     } else if (data.event === "join" && data.user) {
-      if (data.user !== layout.getAttribute("data-username")) {
+      if (data.user !== username) {
         createOffer(data.user);
       }
     }
   });
 
-  // UI controls.
-  document.getElementById("toggleMic")?.addEventListener("click", function () {
-    if (!localStream) return;
-    localStream.getAudioTracks().forEach(function (track) {
-      track.enabled = !track.enabled;
-    });
-  });
-
-  document.getElementById("toggleCamera")?.addEventListener("click", function () {
-    if (!localStream) return;
-    localStream.getVideoTracks().forEach(function (track) {
-      track.enabled = !track.enabled;
-    });
-  });
-
-  document.getElementById("shareScreen")?.addEventListener("click", async function () {
-    if (!navigator.mediaDevices.getDisplayMedia) return;
-    var screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true });
-    var screenVideo = document.getElementById("screenShare");
-    if (screenVideo) {
-      screenVideo.srcObject = screenStream;
-      screenVideo.style.display = "block";
+  function updateButtonState(button, active, labelOn, labelOff) {
+    if (!button) return;
+    button.setAttribute("aria-pressed", active ? "true" : "false");
+    if (labelOn && labelOff) {
+      button.textContent = active ? labelOn : labelOff;
     }
-  });
+  }
+
+  if (micButton) {
+    micButton.addEventListener("click", async function () {
+      try {
+        await initLocalMedia();
+      } catch (err) {
+        alert("Unable to access microphone.");
+        return;
+      }
+      var audioTrack = localStream && localStream.getAudioTracks()[0];
+      if (!audioTrack) return;
+      audioTrack.enabled = !audioTrack.enabled;
+      updateButtonState(micButton, audioTrack.enabled, "🎙️ Mic On", "🎙️ Mic Off");
+      if (localTile) {
+        localTile.classList.toggle("is-muted", !audioTrack.enabled);
+      }
+    });
+  }
+
+  if (cameraButton) {
+    cameraButton.addEventListener("click", async function () {
+      try {
+        await initLocalMedia();
+      } catch (err) {
+        alert("Unable to access camera.");
+        return;
+      }
+      var videoTrack = localStream && localStream.getVideoTracks()[0];
+      if (!videoTrack) return;
+      videoTrack.enabled = !videoTrack.enabled;
+      updateButtonState(cameraButton, videoTrack.enabled, "🎥 Camera On", "🎥 Camera Off");
+      if (localTile) {
+        localTile.classList.toggle("has-stream", videoTrack.enabled);
+      }
+    });
+  }
+
+  if (screenButton) {
+    screenButton.addEventListener("click", async function () {
+      if (screenStream) {
+        screenStream.getTracks().forEach(function (track) { track.stop(); });
+        screenStream = null;
+        activeVideoTrack = localStream ? localStream.getVideoTracks()[0] : null;
+        if (screenVideo) screenVideo.srcObject = null;
+        if (screenTile) screenTile.classList.remove("has-stream");
+        updateButtonState(screenButton, false, "🖥️ Stop Share", "🖥️ Screen");
+        replaceVideoTrack(activeVideoTrack);
+        return;
+      }
+
+      try {
+        screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true });
+        activeVideoTrack = screenStream.getVideoTracks()[0];
+        if (screenVideo) {
+          screenVideo.srcObject = screenStream;
+          screenVideo.play().catch(function () {});
+        }
+        if (screenTile) screenTile.classList.add("has-stream");
+        updateButtonState(screenButton, true, "🖥️ Stop Share", "🖥️ Screen");
+        replaceVideoTrack(activeVideoTrack);
+
+        activeVideoTrack.addEventListener("ended", function () {
+          if (screenStream) {
+            screenStream.getTracks().forEach(function (track) { track.stop(); });
+          }
+          screenStream = null;
+          activeVideoTrack = localStream ? localStream.getVideoTracks()[0] : null;
+          if (screenVideo) screenVideo.srcObject = null;
+          if (screenTile) screenTile.classList.remove("has-stream");
+          updateButtonState(screenButton, false, "🖥️ Stop Share", "🖥️ Screen");
+          replaceVideoTrack(activeVideoTrack);
+        });
+      } catch (error) {
+        alert("Screen sharing was blocked or cancelled.");
+      }
+    });
+  }
+
+  function replaceVideoTrack(track) {
+    Object.keys(peerConnections).forEach(function (peerId) {
+      var pc = peerConnections[peerId];
+      if (!pc || !track) return;
+      var sender = pc.getSenders().find(function (s) { return s.track && s.track.kind === "video"; });
+      if (sender) {
+        sender.replaceTrack(track);
+      } else {
+        pc.addTrack(track, localStream || new MediaStream([track]));
+      }
+    });
+  }
+
+  if (handButton) {
+    handButton.addEventListener("click", function () {
+      handRaised = !handRaised;
+      updateButtonState(handButton, handRaised, "✋ Hand Raised", "✋ Hand");
+      signalingSend({ event: "raise_hand", user: username, raised: handRaised });
+    });
+  }
 
   // Simple chat send (broadcast only).
   document.getElementById("sendChat")?.addEventListener("click", function () {
@@ -188,7 +319,10 @@
     });
   });
 
-  initLocalMedia().catch(function (err) {
-    console.error("Failed to get local media", err);
-  });
+  // Attempt to initialize media if the user has already granted permission.
+  navigator.permissions?.query({ name: "camera" }).then(function (status) {
+    if (status.state === "granted") {
+      initLocalMedia().catch(function () {});
+    }
+  }).catch(function () {});
 })();

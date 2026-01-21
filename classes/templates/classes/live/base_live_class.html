@@ -11,7 +11,7 @@
 {% block body_class %}live-class-body{% endblock %}
 
 {% block content %}
-  <div class="live-class-layout" data-role="{% if is_teacher %}teacher{% else %}student{% endif %}">
+  <div class="live-class-layout" data-role="{% if is_teacher %}teacher{% else %}student{% endif %}" data-room-id="{{ classroom.id }}" data-username="{{ request.user.username }}">
     {% include "classes/live/components/top_bar.html" %}
 
     <div class="live-class-content">
@@ -69,6 +69,8 @@
   </div>
 
   <script src="{% static 'core/js/live_class.js' %}"></script>
+  <script src="{% static 'js/signaling.js' %}"></script>
+  <script src="{% static 'js/webrtc.js' %}"></script>
   <script src="{% static 'core/js/calculator.js' %}"></script>
   <script src="{% static 'core/js/formulas.js' %}"></script>
 {% endblock %}
