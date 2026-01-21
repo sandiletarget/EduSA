@@ -5,11 +5,14 @@
     <title>EduSA</title>
     {% load static %}
     <link rel="stylesheet" href="{% static 'core/css/dashboard.css' %}">
+    <link rel="stylesheet" href="{% static 'core/css/loader.css' %}">
     {% block extra_head %}{% endblock %}
 </head>
 <body class="{% block body_class %}{% endblock %}">
+    {% include "core/components/loader.html" %}
     {# Base layout for public pages. Dashboards extend a separate base. #}
     {% block content %}{% endblock %}
+    <script src="{% static 'core/js/loader.js' %}"></script>
 </body>
 </html>
 
