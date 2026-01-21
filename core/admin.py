@@ -1,6 +1,25 @@
 from django.contrib import admin
 
-from .models import Choice, Formula, Grade, Lesson, Progress, Question, Quiz, QuizResult, StudentProgress, Subject, Topic
+from .models import (
+    Choice,
+    ExamAnswer,
+    ExamAttempt,
+    ExamOption,
+    ExamQuestion,
+    Formula,
+    Grade,
+    Lesson,
+    LessonBookmark,
+    LessonNote,
+    Progress,
+    Question,
+    Quiz,
+    QuizResult,
+    StudentProgress,
+    Subject,
+    Subtopic,
+    Topic,
+)
 
 
 @admin.register(Lesson)
@@ -70,8 +89,49 @@ class TopicAdmin(admin.ModelAdmin):
     search_fields = ("name",)
 
 
+@admin.register(Subtopic)
+class SubtopicAdmin(admin.ModelAdmin):
+    list_display = ("name", "topic")
+    list_filter = ("topic",)
+    search_fields = ("name",)
+
+
 @admin.register(StudentProgress)
 class StudentProgressAdmin(admin.ModelAdmin):
     list_display = ("student", "lesson", "completed", "completed_at", "last_opened_at")
     list_filter = ("completed",)
     search_fields = ("student__username", "lesson__title")
+
+
+@admin.register(LessonBookmark)
+class LessonBookmarkAdmin(admin.ModelAdmin):
+    list_display = ("student", "lesson", "created_at")
+    search_fields = ("student__username", "lesson__title")
+
+
+@admin.register(LessonNote)
+class LessonNoteAdmin(admin.ModelAdmin):
+    list_display = ("student", "lesson", "created_at")
+    search_fields = ("student__username", "lesson__title", "content")
+
+
+@admin.register(ExamQuestion)
+class ExamQuestionAdmin(admin.ModelAdmin):
+    list_display = ("exam", "question_type", "points")
+    list_filter = ("question_type",)
+
+
+@admin.register(ExamOption)
+class ExamOptionAdmin(admin.ModelAdmin):
+    list_display = ("question", "text", "is_correct")
+
+
+@admin.register(ExamAttempt)
+class ExamAttemptAdmin(admin.ModelAdmin):
+    list_display = ("exam", "student", "score", "started_at", "completed_at")
+    list_filter = ("exam",)
+
+
+@admin.register(ExamAnswer)
+class ExamAnswerAdmin(admin.ModelAdmin):
+    list_display = ("attempt", "question", "is_correct", "score_awarded")

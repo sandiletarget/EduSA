@@ -1,0 +1,27 @@
+{% extends "core/base_student.html" %}
+
+{% block dashboard_content %}
+<section class="panel">
+  <div class="panel__header">
+    <h2>Available Exams</h2>
+  </div>
+  <div class="panel__body">
+    {% for exam in exams %}
+      <div class="panel-item">
+        <div>
+          <h3>{{ exam.title }}</h3>
+          <p class="muted">{{ exam.subject_ref.name|default:"Subject" }} · {{ exam.grade_ref|default:"Grade" }}</p>
+          {% if exam.duration_minutes %}
+            <span class="chip">{{ exam.duration_minutes }} min</span>
+          {% endif %}
+        </div>
+        <div>
+          <a class="btn btn-outline" href="{% url 'exam_take' exam.id %}">Start</a>
+        </div>
+      </div>
+    {% empty %}
+      <p class="panel-empty">No exams available.</p>
+    {% endfor %}
+  </div>
+</section>
+{% endblock %}

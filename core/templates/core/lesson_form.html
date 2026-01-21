@@ -1,10 +1,57 @@
-<h2>{% if lesson %}Edit{% else %}Add{% endif %} Lesson</h2>
+<div class="mx-auto max-w-3xl rounded-3xl bg-white/90 p-8 shadow-xl">
+  <h2 class="text-2xl font-semibold text-slate-900">{% if lesson %}Edit{% else %}Add{% endif %} Lesson</h2>
 
-<form method="post">
-  {% csrf_token %}
-  <input name="title" placeholder="Title" value="{{ lesson.title|default:'' }}"><br><br>
-  <textarea name="description" placeholder="Description">{{ lesson.description|default:'' }}</textarea><br><br>
-  <button type="submit">Save</button>
-</form>
+  <form method="post" enctype="multipart/form-data" class="mt-6 space-y-4">
+    {% csrf_token %}
+    {{ form.non_field_errors }}
+    <div>
+      <label class="text-sm font-medium text-slate-700">Title</label>
+      {{ form.title }}
+    </div>
+    <div>
+      <label class="text-sm font-medium text-slate-700">Content</label>
+      {{ form.content }}
+    </div>
+    <div>
+      <label class="text-sm font-medium text-slate-700">Grade</label>
+      {{ form.grade_ref }}
+    </div>
+    <div>
+      <label class="text-sm font-medium text-slate-700">Subject</label>
+      {{ form.subject_ref }}
+    </div>
+    <div>
+      <label class="text-sm font-medium text-slate-700">Topic</label>
+      {{ form.topic_ref }}
+    </div>
+    <div>
+      <label class="text-sm font-medium text-slate-700">Subtopic</label>
+      {{ form.subtopic_ref }}
+    </div>
+    <div>
+      <label class="text-sm font-medium text-slate-700">Notes</label>
+      {{ form.notes_text }}
+    </div>
+    <div>
+      <label class="text-sm font-medium text-slate-700">Notes file</label>
+      {{ form.notes_file }}
+    </div>
+    <div>
+      <label class="text-sm font-medium text-slate-700">Video URL</label>
+      {{ form.video_url }}
+    </div>
+    <div>
+      <label class="text-sm font-medium text-slate-700">Formula sheet</label>
+      {{ form.formula_sheet }}
+    </div>
+    <div>
+      <label class="text-sm font-medium text-slate-700">Cover image</label>
+      {{ form.cover_image }}
+    </div>
+    <button type="submit" class="w-full rounded-lg bg-indigo-600 px-4 py-2 text-white font-semibold shadow-sm hover:bg-indigo-500">
+      Save
+    </button>
+  </form>
 
-<a href="{% url 'teacher_dashboard' %}">Back</a>
+  <a class="mt-4 inline-flex text-sm font-semibold text-indigo-600" href="{% url 'teacher_dashboard' %}">Back</a>
+</div>

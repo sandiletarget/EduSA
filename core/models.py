@@ -1,4 +1,5 @@
 import uuid
+from django.utils.text import slugify
 
 from django.conf import settings
 from django.db import models
@@ -40,22 +41,48 @@ class Topic(models.Model):
         return f"{self.name} ({self.subject.name})"
 
 
+class Subtopic(models.Model):
+    topic = models.ForeignKey(Topic, on_delete=models.CASCADE, related_name="subtopics")
+    name = models.CharField(max_length=150)
+
+    class Meta:
+        ordering = ("topic", "name")
+        unique_together = ("topic", "name")
+
+    def __str__(self):
+        return self.name
+
+
 class Lesson(models.Model):
     title = models.CharField(max_length=200)
+    slug = models.SlugField(max_length=220, unique=True, blank=True, null=True)
     content = models.TextField()
     grade = models.CharField(max_length=20, blank=True, default="")
     subject = models.CharField(max_length=50, blank=True, default="")
     grade_ref = models.ForeignKey(Grade, on_delete=models.SET_NULL, null=True, blank=True, related_name="lessons")
     subject_ref = models.ForeignKey(Subject, on_delete=models.SET_NULL, null=True, blank=True, related_name="lessons")
     topic_ref = models.ForeignKey(Topic, on_delete=models.SET_NULL, null=True, blank=True, related_name="lessons")
+    subtopic_ref = models.ForeignKey("Subtopic", on_delete=models.SET_NULL, null=True, blank=True, related_name="lessons")
     notes_text = models.TextField(blank=True, default="")
     notes_file = models.FileField(upload_to="lesson_notes/", blank=True, null=True)
     video_url = models.URLField(blank=True, default="")
     formula_sheet = models.FileField(upload_to="formula_sheets/", blank=True, null=True)
+    cover_image = models.FileField(upload_to="lesson_images/", blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return self.title
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            base = slugify(self.title) or "lesson"
+            candidate = base
+            idx = 1
+            while Lesson.objects.filter(slug=candidate).exclude(pk=self.pk).exists():
+                idx += 1
+                candidate = f"{base}-{idx}"
+            self.slug = candidate
+        super().save(*args, **kwargs)
 
     @property
     def description(self):
@@ -181,9 +208,13 @@ class Exam(models.Model):
         on_delete=models.CASCADE,
         related_name="exams",
     )
+    grade_ref = models.ForeignKey(Grade, on_delete=models.SET_NULL, null=True, blank=True, related_name="exams")
+    subject_ref = models.ForeignKey(Subject, on_delete=models.SET_NULL, null=True, blank=True, related_name="exams")
     title = models.CharField(max_length=200)
     description = models.TextField(blank=True)
     due_date = models.DateField(null=True, blank=True)
+    duration_minutes = models.PositiveIntegerField(null=True, blank=True)
+    is_published = models.BooleanField(default=False)
     created_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
@@ -196,6 +227,107 @@ class Exam(models.Model):
 
     def __str__(self):
         return self.title
+
+
+class LessonBookmark(models.Model):
+    student = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="lesson_bookmarks",
+    )
+    lesson = models.ForeignKey(
+        Lesson,
+        on_delete=models.CASCADE,
+        related_name="bookmarks",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ("student", "lesson")
+
+    def __str__(self):
+        return f"{self.student} bookmarked {self.lesson}"
+
+
+class LessonNote(models.Model):
+    student = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="lesson_notes",
+    )
+    lesson = models.ForeignKey(
+        Lesson,
+        on_delete=models.CASCADE,
+        related_name="notes",
+    )
+    content = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ("-created_at",)
+
+    def __str__(self):
+        return f"Note for {self.lesson}"
+
+
+class ExamQuestion(models.Model):
+    TYPE_MULTIPLE_CHOICE = "mcq"
+    TYPE_TRUE_FALSE = "true_false"
+    TYPE_SHORT = "short"
+    TYPE_NUMERIC = "numeric"
+    TYPE_FORMULA = "formula"
+
+    QUESTION_TYPES = [
+        (TYPE_MULTIPLE_CHOICE, "Multiple choice"),
+        (TYPE_TRUE_FALSE, "True/False"),
+        (TYPE_SHORT, "Short answer"),
+        (TYPE_NUMERIC, "Numerical"),
+        (TYPE_FORMULA, "Formula"),
+    ]
+
+    exam = models.ForeignKey(Exam, on_delete=models.CASCADE, related_name="questions")
+    prompt = models.TextField()
+    question_type = models.CharField(max_length=30, choices=QUESTION_TYPES)
+    points = models.PositiveIntegerField(default=1)
+    correct_answer = models.TextField(blank=True)
+
+    def __str__(self):
+        return self.prompt[:60]
+
+
+class ExamOption(models.Model):
+    question = models.ForeignKey(ExamQuestion, on_delete=models.CASCADE, related_name="options")
+    text = models.CharField(max_length=300)
+    is_correct = models.BooleanField(default=False)
+
+    def __str__(self):
+        return self.text
+
+
+class ExamAttempt(models.Model):
+    exam = models.ForeignKey(Exam, on_delete=models.CASCADE, related_name="attempts")
+    student = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="exam_attempts")
+    score = models.PositiveIntegerField(default=0)
+    started_at = models.DateTimeField(auto_now_add=True)
+    completed_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        ordering = ("-started_at",)
+
+    def __str__(self):
+        return f"{self.student} - {self.exam}"
+
+
+class ExamAnswer(models.Model):
+    attempt = models.ForeignKey(ExamAttempt, on_delete=models.CASCADE, related_name="answers")
+    question = models.ForeignKey(ExamQuestion, on_delete=models.CASCADE, related_name="answers")
+    selected_option = models.ForeignKey(ExamOption, on_delete=models.SET_NULL, null=True, blank=True)
+    answer_text = models.TextField(blank=True)
+    is_correct = models.BooleanField(default=False)
+    score_awarded = models.PositiveIntegerField(default=0)
+
+    def __str__(self):
+        return f"Answer for {self.question_id}"
 
 
 class Formula(models.Model):

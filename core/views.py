@@ -7,14 +7,30 @@ from django.db import models
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.template import engines
+from django.core.paginator import Paginator
 from django.utils import timezone
 from django.utils.http import url_has_allowed_host_and_scheme
 
 from classes.models import Class as Classroom, ClassMembership
 
 from .accounts.decorators import student_required
-from .forms import ExamForm, JoinClassForm
-from .models import Exam, Formula, Grade, Lesson, Progress, QuizResult, StudentProgress, Subject
+from .forms import ExamForm, JoinClassForm, LessonForm
+from .models import (
+    Exam,
+    ExamAnswer,
+    ExamAttempt,
+    ExamOption,
+    ExamQuestion,
+    Formula,
+    Grade,
+    Lesson,
+    LessonBookmark,
+    LessonNote,
+    Progress,
+    QuizResult,
+    StudentProgress,
+    Subject,
+)
 from .utils import ROLE_DASHBOARD, dashboard_for_user, resolve_user_role
 
 
@@ -164,24 +180,24 @@ def teacher_dashboard(request):
 @login_required
 @user_passes_test(is_teacher)
 def lesson_create(request):
-    if request.method == "POST":
-        lesson = Lesson(title=request.POST.get("title", ""))
-        lesson.description = request.POST.get("description", "")
-        lesson.save()
+    form = LessonForm(request.POST or None, request.FILES or None)
+    if request.method == "POST" and form.is_valid():
+        form.save()
+        messages.success(request, "Lesson created.")
         return redirect("teacher_dashboard")
-    return render(request, "core/lesson_form.html")
+    return render(request, "core/lesson_form.html", {"form": form})
 
 
 @login_required
 @user_passes_test(is_teacher)
 def lesson_edit(request, pk):
     lesson = get_object_or_404(Lesson, pk=pk)
-    if request.method == "POST":
-        lesson.title = request.POST.get("title", lesson.title)
-        lesson.description = request.POST.get("description", lesson.description)
-        lesson.save()
+    form = LessonForm(request.POST or None, request.FILES or None, instance=lesson)
+    if request.method == "POST" and form.is_valid():
+        form.save()
+        messages.success(request, "Lesson updated.")
         return redirect("teacher_dashboard")
-    return render(request, "core/lesson_form.html", {"lesson": lesson})
+    return render(request, "core/lesson_form.html", {"form": form, "lesson": lesson})
 
 
 @login_required
@@ -239,29 +255,39 @@ def lesson_catalog(request):
     grade = Grade.objects.filter(number=grade_number).first() if grade_number else Grade.objects.first()
     subjects = Subject.objects.all()
 
-    lessons = Lesson.objects.all()
+    lessons = Lesson.objects.select_related("grade_ref", "subject_ref", "topic_ref", "subtopic_ref")
     if grade:
         lessons = lessons.filter(models.Q(grade_ref=grade) | models.Q(grade=str(grade.number)))
     if subject_slug:
         lessons = lessons.filter(models.Q(subject_ref__slug=subject_slug) | models.Q(subject__iexact=subject_slug.replace("-", " ")))
 
+    paginator = Paginator(lessons, 12)
+    page_obj = paginator.get_page(request.GET.get("page"))
+
     progress_map = {
         progress.lesson_id: progress
-        for progress in StudentProgress.objects.filter(student=request.user, lesson__in=lessons)
+        for progress in StudentProgress.objects.filter(student=request.user, lesson__in=page_obj)
+    }
+
+    bookmarks = {
+        bookmark.lesson_id
+        for bookmark in LessonBookmark.objects.filter(student=request.user, lesson__in=page_obj)
     }
 
     lesson_cards = [
         {
             "lesson": lesson,
             "progress": progress_map.get(lesson.id),
+            "bookmarked": lesson.id in bookmarks,
         }
-        for lesson in lessons
+        for lesson in page_obj
     ]
 
     return render(request, "core/lessons/lesson_catalog.html", {
         "grade": grade,
         "subjects": subjects,
         "lesson_cards": lesson_cards,
+        "page_obj": page_obj,
     })
 
 
@@ -272,16 +298,104 @@ def lesson_detail(request, pk):
     progress.last_opened_at = timezone.now()
     progress.save(update_fields=["last_opened_at"])
 
-    if request.method == "POST":
-        progress.completed = True
-        progress.completed_at = timezone.now()
-        progress.save(update_fields=["completed", "completed_at"])
-        messages.success(request, "Lesson marked as completed.")
-        return redirect("lesson_detail", pk=lesson.pk)
+    bookmarked = LessonBookmark.objects.filter(student=request.user, lesson=lesson).exists()
 
+    if request.method == "POST":
+        action = request.POST.get("action")
+        if action == "complete":
+            progress.completed = True
+            progress.completed_at = timezone.now()
+            progress.save(update_fields=["completed", "completed_at"])
+            messages.success(request, "Lesson marked as completed.")
+            return redirect("lesson_detail", pk=lesson.pk)
+        if action == "bookmark":
+            LessonBookmark.objects.get_or_create(student=request.user, lesson=lesson)
+            messages.success(request, "Lesson bookmarked.")
+            return redirect("lesson_detail", pk=lesson.pk)
+        if action == "unbookmark":
+            LessonBookmark.objects.filter(student=request.user, lesson=lesson).delete()
+            messages.info(request, "Bookmark removed.")
+            return redirect("lesson_detail", pk=lesson.pk)
+        if action == "note":
+            content = (request.POST.get("note") or "").strip()
+            if content:
+                LessonNote.objects.create(student=request.user, lesson=lesson, content=content)
+                messages.success(request, "Note saved.")
+            return redirect("lesson_detail", pk=lesson.pk)
     return render(request, "core/lessons/lesson_detail.html", {
         "lesson": lesson,
         "progress": progress,
+        "bookmarked": bookmarked,
+        "notes": LessonNote.objects.filter(student=request.user, lesson=lesson),
+        "grades": list(range(4, 13)),
+    })
+
+
+@login_required
+def lesson_detail_slug(request, slug):
+    lesson = get_object_or_404(Lesson, slug=slug)
+    return lesson_detail(request, lesson.pk)
+
+
+@login_required
+def exam_list(request):
+    exams = Exam.objects.filter(is_published=True).select_related("grade_ref", "subject_ref")
+    return render(request, "core/exams/exam_list.html", {"exams": exams})
+
+
+@login_required
+def exam_take(request, exam_id):
+    exam = get_object_or_404(Exam, pk=exam_id, is_published=True)
+    questions = exam.questions.prefetch_related("options")
+
+    if request.method == "POST":
+        attempt = ExamAttempt.objects.create(exam=exam, student=request.user)
+        total_score = 0
+
+        for question in questions:
+            answer_value = request.POST.get(f"question_{question.id}", "").strip()
+            selected_option = None
+            is_correct = False
+            score_awarded = 0
+
+            if question.question_type in {"mcq", "true_false"}:
+                if answer_value.isdigit():
+                    selected_option = ExamOption.objects.filter(pk=int(answer_value), question=question).first()
+                is_correct = bool(selected_option and selected_option.is_correct)
+            else:
+                is_correct = answer_value.lower() == (question.correct_answer or "").strip().lower()
+
+            if is_correct:
+                score_awarded = question.points
+                total_score += score_awarded
+
+            ExamAnswer.objects.create(
+                attempt=attempt,
+                question=question,
+                selected_option=selected_option,
+                answer_text=answer_value,
+                is_correct=is_correct,
+                score_awarded=score_awarded,
+            )
+
+        attempt.score = total_score
+        attempt.completed_at = timezone.now()
+        attempt.save(update_fields=["score", "completed_at"])
+        return redirect("exam_result", attempt_id=attempt.id)
+
+    return render(request, "core/exams/exam_take.html", {
+        "exam": exam,
+        "questions": questions,
+    })
+
+
+@login_required
+def exam_result(request, attempt_id):
+    attempt = get_object_or_404(ExamAttempt, pk=attempt_id, student=request.user)
+    answers = attempt.answers.select_related("question", "selected_option")
+    return render(request, "core/exams/exam_result.html", {
+        "attempt": attempt,
+        "answers": answers,
     })
 
 
@@ -329,6 +443,7 @@ def lessons_api(request):
     payload = [
         {
             "id": lesson.id,
+            "slug": lesson.slug,
             "title": lesson.title,
             "grade": lesson.grade_ref.number if lesson.grade_ref else lesson.grade,
             "subject": lesson.subject_ref.slug if lesson.subject_ref else lesson.subject,
@@ -337,6 +452,30 @@ def lessons_api(request):
         for lesson in lessons
     ]
     return JsonResponse({"lessons": payload})
+
+
+@login_required
+def exams_api(request):
+    grade = request.GET.get("grade")
+    subject = request.GET.get("subject")
+
+    exams = Exam.objects.filter(is_published=True)
+    if grade:
+        exams = exams.filter(models.Q(grade_ref__number=grade))
+    if subject:
+        exams = exams.filter(models.Q(subject_ref__slug=subject))
+
+    payload = [
+        {
+            "id": exam.id,
+            "title": exam.title,
+            "grade": exam.grade_ref.number if exam.grade_ref else None,
+            "subject": exam.subject_ref.slug if exam.subject_ref else None,
+            "duration_minutes": exam.duration_minutes,
+        }
+        for exam in exams
+    ]
+    return JsonResponse({"exams": payload})
 
 
 @login_required

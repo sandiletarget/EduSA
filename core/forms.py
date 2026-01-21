@@ -7,7 +7,65 @@ from .models import Exam, Lesson
 class LessonForm(forms.ModelForm):
     class Meta:
         model = Lesson
-        fields = ["title", "content"]
+        fields = [
+            "title",
+            "content",
+            "grade_ref",
+            "subject_ref",
+            "topic_ref",
+            "subtopic_ref",
+            "notes_text",
+            "notes_file",
+            "video_url",
+            "formula_sheet",
+            "cover_image",
+        ]
+        widgets = {
+            "title": forms.TextInput(
+                attrs={
+                    "class": "mt-1 w-full rounded-lg border border-slate-200 px-4 py-2 text-sm text-slate-900",
+                    "placeholder": "Lesson title",
+                }
+            ),
+            "content": forms.Textarea(
+                attrs={
+                    "class": "mt-1 w-full rounded-lg border border-slate-200 px-4 py-2 text-sm text-slate-900",
+                    "rows": 6,
+                }
+            ),
+            "grade_ref": forms.Select(
+                attrs={
+                    "class": "mt-1 w-full rounded-lg border border-slate-200 px-4 py-2 text-sm text-slate-900",
+                }
+            ),
+            "subject_ref": forms.Select(
+                attrs={
+                    "class": "mt-1 w-full rounded-lg border border-slate-200 px-4 py-2 text-sm text-slate-900",
+                }
+            ),
+            "topic_ref": forms.Select(
+                attrs={
+                    "class": "mt-1 w-full rounded-lg border border-slate-200 px-4 py-2 text-sm text-slate-900",
+                }
+            ),
+            "subtopic_ref": forms.Select(
+                attrs={
+                    "class": "mt-1 w-full rounded-lg border border-slate-200 px-4 py-2 text-sm text-slate-900",
+                }
+            ),
+            "notes_text": forms.Textarea(
+                attrs={
+                    "class": "mt-1 w-full rounded-lg border border-slate-200 px-4 py-2 text-sm text-slate-900",
+                    "rows": 4,
+                }
+            ),
+            "video_url": forms.URLInput(
+                attrs={
+                    "class": "mt-1 w-full rounded-lg border border-slate-200 px-4 py-2 text-sm text-slate-900",
+                    "placeholder": "https://...",
+                }
+            ),
+        }
 
 
 class JoinClassForm(forms.Form):
@@ -44,9 +102,19 @@ class JoinClassForm(forms.Form):
 class ExamForm(forms.ModelForm):
     class Meta:
         model = Exam
-        fields = ["classroom", "title", "description", "due_date"]
+        fields = ["classroom", "grade_ref", "subject_ref", "title", "description", "due_date", "duration_minutes", "is_published"]
         widgets = {
             "classroom": forms.Select(
+                attrs={
+                    "class": "mt-1 w-full rounded-lg border border-slate-200 px-4 py-2 text-sm text-slate-900",
+                }
+            ),
+            "grade_ref": forms.Select(
+                attrs={
+                    "class": "mt-1 w-full rounded-lg border border-slate-200 px-4 py-2 text-sm text-slate-900",
+                }
+            ),
+            "subject_ref": forms.Select(
                 attrs={
                     "class": "mt-1 w-full rounded-lg border border-slate-200 px-4 py-2 text-sm text-slate-900",
                 }
@@ -68,6 +136,12 @@ class ExamForm(forms.ModelForm):
                 attrs={
                     "type": "date",
                     "class": "mt-1 w-full rounded-lg border border-slate-200 px-4 py-2 text-sm text-slate-900",
+                }
+            ),
+            "duration_minutes": forms.NumberInput(
+                attrs={
+                    "class": "mt-1 w-full rounded-lg border border-slate-200 px-4 py-2 text-sm text-slate-900",
+                    "min": 1,
                 }
             ),
         }

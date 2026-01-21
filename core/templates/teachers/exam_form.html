@@ -11,6 +11,14 @@
       {{ form.classroom }}
     </div>
     <div>
+      <label class="text-sm font-medium text-slate-700">Grade</label>
+      {{ form.grade_ref }}
+    </div>
+    <div>
+      <label class="text-sm font-medium text-slate-700">Subject</label>
+      {{ form.subject_ref }}
+    </div>
+    <div>
       <label class="text-sm font-medium text-slate-700">Title</label>
       {{ form.title }}
     </div>
@@ -21,6 +29,14 @@
     <div>
       <label class="text-sm font-medium text-slate-700">Due date</label>
       {{ form.due_date }}
+    </div>
+    <div>
+      <label class="text-sm font-medium text-slate-700">Duration (minutes)</label>
+      {{ form.duration_minutes }}
+    </div>
+    <div class="flex items-center gap-2">
+      {{ form.is_published }}
+      <label class="text-sm font-medium text-slate-700">Publish exam</label>
     </div>
     <button type="submit" class="w-full rounded-lg bg-purple-600 px-4 py-2 text-white font-semibold shadow-sm hover:bg-purple-500">
       Create exam

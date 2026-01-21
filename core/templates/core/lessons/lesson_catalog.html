@@ -39,6 +39,9 @@
           {% if lesson.topic_ref %}
             <p class="muted">{{ lesson.topic_ref.name }}</p>
           {% endif %}
+          {% if card.bookmarked %}
+            <span class="chip">Bookmarked</span>
+          {% endif %}
         </div>
         <div>
           {% if progress and progress.completed %}
@@ -46,13 +49,25 @@
           {% elif progress %}
             <span class="chip">In progress</span>
           {% endif %}
-          <a class="btn btn-outline" href="{% url 'lesson_detail' lesson.id %}">Open</a>
+          <a class="btn btn-outline" href="{% url 'lesson_detail_slug' lesson.slug %}">Open</a>
         </div>
       </div>
       {% endwith %}
     {% empty %}
       <p class="panel-empty">No lessons found for this grade/subject.</p>
     {% endfor %}
+
+    {% if page_obj and page_obj.paginator.num_pages > 1 %}
+      <div class="panel-item" style="justify-content: space-between;">
+        {% if page_obj.has_previous %}
+          <a class="btn btn-outline" href="?grade={{ request.GET.grade }}&subject={{ request.GET.subject }}&page={{ page_obj.previous_page_number }}">Previous</a>
+        {% endif %}
+        <span class="muted">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+        {% if page_obj.has_next %}
+          <a class="btn btn-outline" href="?grade={{ request.GET.grade }}&subject={{ request.GET.subject }}&page={{ page_obj.next_page_number }}">Next</a>
+        {% endif %}
+      </div>
+    {% endif %}
   </div>
 </section>
 {% endblock %}

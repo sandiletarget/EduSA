@@ -37,6 +37,10 @@
     <span class="sidebar-icon">📈</span>
     Progress
   </a>
+  <a class="sidebar-link{% if path|slice:':7' == '/exams/' %} is-active{% endif %}" href="{% url 'exam_list' %}">
+    <span class="sidebar-icon">📝</span>
+    Exams
+  </a>
   <a class="sidebar-link" href="{% url 'choose_role' %}">
     <span class="sidebar-icon">⚙️</span>
     Settings

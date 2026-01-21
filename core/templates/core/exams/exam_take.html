@@ -1,0 +1,33 @@
+{% extends "core/base_student.html" %}
+
+{% block dashboard_content %}
+<section class="panel">
+  <div class="panel__header">
+    <h2>{{ exam.title }}</h2>
+    {% if exam.duration_minutes %}
+      <span class="chip">{{ exam.duration_minutes }} min</span>
+    {% endif %}
+  </div>
+  <form method="post" class="panel__body">
+    {% csrf_token %}
+    {% for question in questions %}
+      <div class="panel-item">
+        <div>
+          <p><strong>Question {{ forloop.counter }}:</strong> {{ question.prompt }}</p>
+          {% if question.question_type == 'mcq' or question.question_type == 'true_false' %}
+            {% for option in question.options.all %}
+              <label style="display:block; margin-top:0.4rem;">
+                <input type="radio" name="question_{{ question.id }}" value="{{ option.id }}">
+                {{ option.text }}
+              </label>
+            {% endfor %}
+          {% else %}
+            <input type="text" name="question_{{ question.id }}" class="form-select" placeholder="Your answer">
+          {% endif %}
+        </div>
+      </div>
+    {% endfor %}
+    <button class="btn btn-primary" type="submit">Submit Exam</button>
+  </form>
+</section>
+{% endblock %}

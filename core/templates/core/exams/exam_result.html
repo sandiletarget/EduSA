@@ -1,0 +1,27 @@
+{% extends "core/base_student.html" %}
+
+{% block dashboard_content %}
+<section class="panel">
+  <div class="panel__header">
+    <h2>Exam Results</h2>
+    <span class="chip">Score: {{ attempt.score }}</span>
+  </div>
+  <div class="panel__body">
+    {% for answer in answers %}
+      <div class="panel-item">
+        <div>
+          <p><strong>{{ answer.question.prompt }}</strong></p>
+          <p class="muted">Your answer: {{ answer.answer_text|default:answer.selected_option.text }}</p>
+        </div>
+        <div>
+          {% if answer.is_correct %}
+            <span class="chip">Correct</span>
+          {% else %}
+            <span class="chip">Incorrect</span>
+          {% endif %}
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+</section>
+{% endblock %}

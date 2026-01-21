@@ -1,4 +1,10 @@
 {% extends "core/base_student.html" %}
+{% load static %}
+
+{% block extra_head %}
+  {{ block.super }}
+  <link rel="stylesheet" href="{% static 'core/css/calculator.css' %}">
+{% endblock %}
 
 {% block dashboard_content %}
 <section class="panel">
@@ -10,6 +16,12 @@
   </div>
   <div class="panel__body">
     <p class="muted">{{ lesson.subject_ref.name|default:lesson.subject }}{% if lesson.grade_ref %} · {{ lesson.grade_ref }}{% endif %}</p>
+
+    {% if lesson.cover_image %}
+      <div class="panel-item">
+        <img src="{{ lesson.cover_image.url }}" alt="{{ lesson.title }}" loading="lazy" style="width:100%; border-radius:16px;">
+      </div>
+    {% endif %}
 
     {% if lesson.notes_text %}
       <div class="panel-item">
@@ -47,10 +59,53 @@
       </div>
     {% endif %}
 
-    <form method="post" class="panel-item">
-      {% csrf_token %}
-      <button class="btn btn-primary" type="submit">Mark as completed</button>
-    </form>
+    <div class="panel-item">
+      {% if bookmarked %}
+        <form method="post">
+          {% csrf_token %}
+          <input type="hidden" name="action" value="unbookmark">
+          <button class="btn btn-outline" type="submit">Remove Bookmark</button>
+        </form>
+      {% else %}
+        <form method="post">
+          {% csrf_token %}
+          <input type="hidden" name="action" value="bookmark">
+          <button class="btn btn-outline" type="submit">Bookmark Lesson</button>
+        </form>
+      {% endif %}
+
+      <form method="post">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="complete">
+        <button class="btn btn-primary" type="submit">Mark as completed</button>
+      </form>
+    </div>
+
+    <div class="panel-item">
+      <div>
+        <h3>Calculator</h3>
+        {% include "core/components/classroom_calculator.html" with calc_id="lesson-calculator" formula_grade=lesson.grade_ref.number|default:10 formula_subject=lesson.subject_ref.slug|default:"mathematics" grades=grades read_only=True %}
+      </div>
+    </div>
+
+    <div class="panel-item">
+      <div>
+        <h3>Notes</h3>
+        <form method="post">
+          {% csrf_token %}
+          <input type="hidden" name="action" value="note">
+          <textarea name="note" class="form-select" rows="3" placeholder="Write your notes..."></textarea>
+          <button class="btn btn-primary" type="submit">Save note</button>
+        </form>
+        {% for note in notes %}
+          <p class="muted">{{ note.created_at|date:"M j, Y" }} · {{ note.content }}</p>
+        {% empty %}
+          <p class="muted">No notes yet.</p>
+        {% endfor %}
+      </div>
+    </div>
   </div>
 </section>
+<script src="{% static 'core/js/calculator.js' %}"></script>
+<script src="{% static 'core/js/formulas.js' %}"></script>
 {% endblock %}
