@@ -1,0 +1,231 @@
+:root {
+  --classroom-bg: #f3f4f6;
+  --classroom-surface: #ffffff;
+  --classroom-border: #e5e7eb;
+  --classroom-text: #111827;
+  --classroom-muted: #6b7280;
+  --classroom-primary: #3f51b5;
+  --classroom-secondary: #16a34a;
+  --classroom-accent: #f59e0b;
+  --classroom-shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
+}
+
+.classroom-body {
+  margin: 0;
+  background: var(--classroom-bg);
+  color: var(--classroom-text);
+  font-family: "Inter", "Segoe UI", system-ui, sans-serif;
+}
+
+.classroom-page {
+  max-width: 1080px;
+  margin: 2rem auto 4rem;
+  padding: 0 1.5rem;
+  display: grid;
+  gap: 1.5rem;
+}
+
+.classroom-hero {
+  background: var(--classroom-surface);
+  border: 1px solid var(--classroom-border);
+  border-radius: 22px;
+  padding: 1.8rem;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1.5rem;
+  box-shadow: var(--classroom-shadow);
+}
+
+.classroom-kicker {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.3em;
+  color: var(--classroom-muted);
+  font-weight: 600;
+}
+
+.classroom-title {
+  margin: 0.4rem 0 0;
+  font-size: 2.4rem;
+  font-weight: 700;
+}
+
+.classroom-subtitle {
+  margin: 0.5rem 0 0;
+  color: var(--classroom-muted);
+  max-width: 720px;
+}
+
+.status-pill {
+  background: #e5e7eb;
+  color: var(--classroom-muted);
+  padding: 0.3rem 0.8rem;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  height: fit-content;
+}
+
+.status-pill.is-live {
+  background: rgba(22, 163, 74, 0.15);
+  color: var(--classroom-secondary);
+}
+
+.classroom-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
+}
+
+.info-card {
+  background: var(--classroom-surface);
+  border: 1px solid var(--classroom-border);
+  border-radius: 18px;
+  padding: 1rem 1.2rem;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.06);
+}
+
+.info-card .label {
+  margin: 0;
+  text-transform: uppercase;
+  font-size: 0.7rem;
+  letter-spacing: 0.2em;
+  color: var(--classroom-muted);
+  font-weight: 600;
+}
+
+.info-card .value {
+  margin: 0.4rem 0 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.classroom-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  padding: 0.7rem 1.4rem;
+  border-radius: 999px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-decoration: none;
+  border: 1px solid transparent;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.btn-primary {
+  background: var(--classroom-primary);
+  color: #fff;
+  box-shadow: 0 10px 20px rgba(63, 81, 181, 0.25);
+}
+
+.btn-outline {
+  border-color: var(--classroom-border);
+  color: var(--classroom-text);
+  background: #fff;
+}
+
+.btn:hover {
+  transform: translateY(-1px);
+}
+
+.classroom-alert {
+  background: rgba(63, 81, 181, 0.08);
+  border: 1px solid rgba(63, 81, 181, 0.2);
+  padding: 0.8rem 1rem;
+  border-radius: 14px;
+  color: var(--classroom-text);
+  font-size: 0.9rem;
+}
+
+.classroom-panel {
+  background: var(--classroom-surface);
+  border: 1px solid var(--classroom-border);
+  border-radius: 22px;
+  padding: 1.4rem;
+  box-shadow: var(--classroom-shadow);
+}
+
+.panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
+  border-bottom: 1px solid var(--classroom-border);
+  padding-bottom: 1rem;
+}
+
+.panel-header h2 {
+  margin: 0.2rem 0 0;
+  font-size: 1.5rem;
+}
+
+.panel-kicker {
+  margin: 0;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.25em;
+  color: var(--classroom-muted);
+  font-weight: 600;
+}
+
+.panel-media {
+  margin-top: 1.2rem;
+  border-radius: 18px;
+  overflow: hidden;
+  border: 1px solid var(--classroom-border);
+  background: #f8fafc;
+}
+
+.jitsi-shell {
+  width: 100%;
+  height: 520px;
+}
+
+.panel-note {
+  margin-top: 1rem;
+  color: var(--classroom-muted);
+}
+
+.member-list {
+  list-style: none;
+  padding: 1rem 0 0;
+  margin: 0;
+  display: grid;
+  gap: 0.75rem;
+}
+
+.member-list li {
+  background: #f8fafc;
+  border: 1px solid var(--classroom-border);
+  border-radius: 16px;
+  padding: 0.8rem 1rem;
+  font-weight: 600;
+  color: var(--classroom-text);
+}
+
+.member-list li.is-empty {
+  color: var(--classroom-muted);
+  font-weight: 500;
+  border-style: dashed;
+}
+
+@media (max-width: 768px) {
+  .classroom-hero {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .classroom-title {
+    font-size: 2rem;
+  }
+}

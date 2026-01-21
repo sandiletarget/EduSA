@@ -1,36 +1,59 @@
 {% extends "core/base.html" %}
+{% load static %}
+
+{% block extra_head %}
+    <link rel="stylesheet" href="{% static 'core/css/classroom.css' %}">
+{% endblock %}
+
+{% block body_class %}classroom-body{% endblock %}
+
 {% block content %}
-<div class="mx-auto mb-12 max-w-4xl rounded-3xl bg-white/90 p-8 shadow-xl">
-    <header class="space-y-2">
-        <p class="text-sm font-medium uppercase tracking-[0.2em] text-slate-500">Classroom</p>
-        <h1 class="text-4xl font-bold text-slate-900">{{ classroom.name }}</h1>
-        <p class="text-base text-slate-600">{{ classroom.description|default:"No description yet." }}</p>
+<div class="classroom-page">
+    <header class="classroom-hero">
+        <div>
+            <span class="classroom-kicker">Classroom</span>
+            <h1 class="classroom-title">{{ classroom.name }}</h1>
+            <p class="classroom-subtitle">{{ classroom.description|default:"No description yet." }}</p>
+        </div>
+        {% if active_session %}
+            <span class="status-pill is-live">Live now</span>
+        {% else %}
+            <span class="status-pill">Offline</span>
+        {% endif %}
     </header>
 
-    <section class="mt-6 grid gap-4 md:grid-cols-2">
-        <div class="rounded-2xl border border-slate-100 bg-slate-50/70 p-4">
-            <p class="text-xs uppercase tracking-wide text-slate-500">Teacher</p>
-            <p class="text-lg font-semibold text-slate-900">{{ classroom.teacher.get_full_name|default:classroom.teacher.username }}</p>
+    <section class="classroom-grid">
+        <div class="info-card">
+            <p class="label">Teacher</p>
+            <p class="value">{{ classroom.teacher.get_full_name|default:classroom.teacher.username }}</p>
         </div>
         {% if is_teacher %}
-        <div class="rounded-2xl border border-slate-100 bg-slate-50/70 p-4">
-            <p class="text-xs uppercase tracking-wide text-slate-500">Passcode</p>
-            <p class="text-lg font-semibold text-slate-900">{{ classroom.passcode }}</p>
+            <div class="info-card">
+                <p class="label">Passcode</p>
+                <p class="value">{{ classroom.passcode }}</p>
+            </div>
+        {% endif %}
+        <div class="info-card">
+            <p class="label">Members</p>
+            <p class="value">{{ classroom.memberships.count }}</p>
         </div>
+        <div class="info-card">
+            <p class="label">Status</p>
+            <p class="value">{% if active_session %}Live{% else %}Offline{% endif %}</p>
+        </div>
+    </section>
+
+    <section class="classroom-actions">
+        {% if is_teacher %}
+            <a href="{% url 'lesson_add' %}" class="btn btn-primary">Create Lesson</a>
+            <a href="{% url 'classes:start_live_session' classroom.pk %}" class="btn btn-outline">Start Live Session</a>
+        {% else %}
+            <a href="{% url 'student_lessons' %}" class="btn btn-primary">View Lessons</a>
+            <a href="{% url 'classes:join_live_session' classroom.pk %}" class="btn btn-outline">Join Live Session</a>
         {% endif %}
     </section>
 
-    <div class="mt-6 flex flex-wrap gap-3">
-        {% if is_teacher %}
-        <a href="{% url 'lesson_add' %}" class="inline-flex items-center justify-center rounded-full bg-sky-600 px-5 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-sky-500">Create Lesson</a>
-        <a href="{% url 'classes:start_live_session' classroom.pk %}" class="inline-flex items-center justify-center rounded-full border border-slate-200 px-5 py-2 text-sm font-semibold text-slate-700">Start Live Session</a>
-        {% else %}
-        <a href="{% url 'student_lessons' %}" class="inline-flex items-center justify-center rounded-full bg-slate-900 px-5 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800">View Lessons</a>
-        <a href="{% url 'classes:join_live_session' classroom.pk %}" class="inline-flex items-center justify-center rounded-full border border-slate-200 px-5 py-2 text-sm font-semibold text-slate-700">Join Live Session</a>
-        {% endif %}
-    </div>
-
-    <div class="mt-4 rounded-2xl border border-slate-100 bg-slate-50/70 px-4 py-3 text-sm text-slate-700">
+    <div class="classroom-alert">
         {% if active_session %}
             Live session active since {{ active_session.started_at|date:"F j, Y g:i a" }}
         {% else %}
@@ -38,41 +61,41 @@
         {% endif %}
     </div>
 
-    <section class="mt-6 rounded-3xl border border-slate-100 bg-white p-5 shadow-sm">
-        <div class="flex flex-wrap items-center justify-between gap-3">
+    <section class="classroom-panel">
+        <div class="panel-header">
             <div>
-                <p class="text-xs uppercase tracking-[0.2em] text-slate-400">Live Session</p>
-                <h2 class="text-2xl font-semibold text-slate-900">Class Live Room</h2>
+                <p class="panel-kicker">Live Session</p>
+                <h2>Class Live Room</h2>
             </div>
             {% if active_session %}
-                <span class="rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-700">Live</span>
+                <span class="status-pill is-live">Live</span>
             {% else %}
-                <span class="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">Offline</span>
+                <span class="status-pill">Offline</span>
             {% endif %}
         </div>
 
         {% if active_session %}
-            <div class="mt-4 overflow-hidden rounded-2xl border border-slate-100">
-                <div id="jitsi-meet" class="h-[520px] w-full bg-slate-50"></div>
+            <div class="panel-media">
+                <div id="jitsi-meet" class="jitsi-shell"></div>
             </div>
         {% else %}
-            <p class="mt-4 text-sm text-slate-500">The teacher has not started the live session yet.</p>
+            <p class="panel-note">The teacher has not started the live session yet.</p>
         {% endif %}
     </section>
 
-    <section class="mt-8">
-        <header class="flex items-center justify-between">
+    <section class="classroom-panel">
+        <div class="panel-header">
             <div>
-                <p class="text-xs uppercase tracking-[0.3em] text-slate-400">Members</p>
-                <h2 class="text-2xl font-semibold text-slate-900">Enrolled Learners</h2>
+                <p class="panel-kicker">Members</p>
+                <h2>Enrolled Learners</h2>
             </div>
-            <span class="rounded-full border border-slate-200 px-3 py-1 text-xs font-medium uppercase tracking-[0.2em] text-slate-500">{{ classroom.memberships.count }} total</span>
-        </header>
-        <ul class="mt-4 space-y-3">
+            <span class="status-pill">{{ classroom.memberships.count }} total</span>
+        </div>
+        <ul class="member-list">
             {% for membership in memberships %}
-                <li class="rounded-2xl border border-slate-100 bg-slate-50/70 px-5 py-3 text-sm font-medium text-slate-800">{{ membership.learner.get_full_name|default:membership.learner.username }}</li>
+                <li>{{ membership.learner.get_full_name|default:membership.learner.username }}</li>
             {% empty %}
-                <li class="rounded-2xl border border-dashed border-slate-200 bg-slate-50/70 px-5 py-3 text-sm text-slate-500">No learners have joined yet.</li>
+                <li class="is-empty">No learners have joined yet.</li>
             {% endfor %}
         </ul>
     </section>

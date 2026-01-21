@@ -24,6 +24,7 @@
   display: flex;
   flex-direction: column;
   min-height: 100vh;
+  background: var(--live-bg);
 }
 
 .live-topbar {
@@ -151,8 +152,8 @@
   display: flex;
   align-items: center;
   gap: 0.6rem;
-  border: 1px solid var(--live-border);
-  background: #fff;
+  border: 1px solid rgba(63, 81, 181, 0.18);
+  background: #f8f9ff;
   border-radius: 12px;
   padding: 0.6rem 0.8rem;
   cursor: pointer;
@@ -162,8 +163,8 @@
 }
 
 .tool-btn:hover {
-  border-color: rgba(63, 81, 181, 0.35);
-  box-shadow: 0 6px 12px rgba(63, 81, 181, 0.12);
+  border-color: rgba(63, 81, 181, 0.45);
+  box-shadow: 0 6px 14px rgba(63, 81, 181, 0.16);
 }
 
 .tool-icon {
@@ -378,6 +379,7 @@
   padding: 0.9rem 2rem;
   border-top: 1px solid var(--live-border);
   background: var(--live-surface);
+  box-shadow: 0 -8px 24px rgba(15, 23, 42, 0.08);
   position: fixed;
   bottom: 0;
   left: 0;
@@ -392,14 +394,19 @@
 }
 
 .control-btn {
-  background: #fff;
-  border: 1px solid var(--live-border);
+  background: #f8f9ff;
+  border: 1px solid rgba(63, 81, 181, 0.22);
   color: var(--live-text);
   padding: 0.55rem 0.9rem;
   border-radius: 12px;
   font-size: 0.85rem;
   cursor: pointer;
   text-decoration: none;
+}
+
+.control-btn:hover {
+  border-color: rgba(63, 81, 181, 0.4);
+  box-shadow: 0 6px 12px rgba(63, 81, 181, 0.14);
 }
 
 .control-btn.primary {
