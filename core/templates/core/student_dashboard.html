@@ -13,6 +13,9 @@
     <h1 class="dashboard-hero__title">Hello, {{ request.user.first_name|default:request.user.username }}!</h1>
     <p class="dashboard-hero__subtitle">Continue your learning journey today.</p>
   </div>
+  <div class="dashboard-hero__media">
+    <img src="{% static 'core/img/welcome-infinity.gif' %}" alt="Infinity symbol" class="dashboard-hero__image">
+  </div>
   <div class="dashboard-hero__actions">
     <a class="btn btn-primary" href="{% url 'student_lessons' %}">Start Learning</a>
     <a class="btn btn-outline" href="{% url 'classes:join_class' %}">Join Class</a>
