@@ -3,7 +3,7 @@ from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import Group
 from django.contrib.auth.decorators import login_required, user_passes_test
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.template import engines
 from django.utils.http import url_has_allowed_host_and_scheme
@@ -12,7 +12,7 @@ from classes.models import Class as Classroom, ClassMembership
 
 from .accounts.decorators import student_required
 from .forms import ExamForm, JoinClassForm
-from .models import Exam, Lesson, Progress, QuizResult
+from .models import Exam, Formula, Lesson, Progress, QuizResult
 from .utils import ROLE_DASHBOARD, dashboard_for_user, resolve_user_role
 
 
@@ -213,12 +213,50 @@ def student_dashboard(request):
     memberships = ClassMembership.objects.filter(learner=request.user).select_related("classroom")
     classrooms = [membership.classroom for membership in memberships]
     exams = Exam.objects.filter(classroom__in=classrooms)
+    learner_grade = getattr(request.user, "grade", None)
+    if learner_grade is None and hasattr(request.user, "profile"):
+        learner_grade = getattr(request.user.profile, "grade", None)
+    if not learner_grade:
+        learner_grade = 10
+    grades = list(range(4, 13))
     return render(request, "core/student_dashboard.html", {
         "lessons": lessons,
         "classrooms": classrooms,
         "exams": exams,
         "role_theme": "student",
+        "learner_grade": learner_grade,
+        "grades": grades,
     })
+
+
+@login_required
+def formulas_api(request):
+    grade = request.GET.get("grade")
+    subject = request.GET.get("subject")
+
+    formulas = Formula.objects.all()
+    if grade:
+        try:
+            formulas = formulas.filter(grade=int(grade))
+        except (TypeError, ValueError):
+            return JsonResponse({"error": "Invalid grade."}, status=400)
+    if subject:
+        formulas = formulas.filter(subject=subject)
+
+    payload = [
+        {
+            "id": formula.id,
+            "grade": formula.grade,
+            "subject": formula.subject,
+            "subject_label": formula.get_subject_display(),
+            "topic": formula.topic,
+            "formula_text": formula.formula_text,
+            "explanation": formula.explanation,
+        }
+        for formula in formulas
+    ]
+
+    return JsonResponse({"formulas": payload})
 
 
 @login_required

@@ -131,3 +131,26 @@ class Exam(models.Model):
 
     def __str__(self):
         return self.title
+
+
+class Formula(models.Model):
+    SUBJECT_CHOICES = [
+        ("mathematics", "Mathematics"),
+        ("physical_sciences", "Physical Sciences"),
+        ("accounting", "Accounting"),
+        ("geography", "Geography"),
+        ("life_sciences", "Life Sciences"),
+    ]
+
+    grade = models.PositiveSmallIntegerField()
+    subject = models.CharField(max_length=50, choices=SUBJECT_CHOICES)
+    topic = models.CharField(max_length=120)
+    formula_text = models.TextField()
+    explanation = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ("grade", "subject", "topic")
+
+    def __str__(self):
+        return f"Grade {self.grade} {self.get_subject_display()} - {self.topic}"

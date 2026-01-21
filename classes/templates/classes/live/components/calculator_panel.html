@@ -1,0 +1,13 @@
+<section class="side-panel is-hidden" data-panel="calculator">
+  <header class="side-panel__header">
+    <h2>Calculator</h2>
+    <button class="panel-close" type="button" data-panel-close>×</button>
+  </header>
+  <div class="side-panel__body">
+    {% if is_teacher %}
+      {% include "core/components/classroom_calculator.html" with calc_id="calculator-live" formula_grade=formula_grade formula_subject=formula_subject read_only=False grades=grades %}
+    {% else %}
+      {% include "core/components/classroom_calculator.html" with calc_id="calculator-live" formula_grade=formula_grade formula_subject=formula_subject read_only=True grades=grades %}
+    {% endif %}
+  </div>
+</section>

@@ -80,12 +80,21 @@ def live_class_room(request, pk):
     active_session = classroom.live_sessions.filter(is_active=True).order_by("-started_at").first()
 
     template_name = "classes/live/live_class_teacher.html" if is_teacher else "classes/live/live_class_student.html"
+    formula_grade = getattr(request.user, "grade", None)
+    if formula_grade is None and hasattr(request.user, "profile"):
+        formula_grade = getattr(request.user.profile, "grade", None)
+    if not formula_grade:
+        formula_grade = 10
+
     return render(request, template_name, {
         "classroom": classroom,
         "is_teacher": is_teacher,
         "participants": participants,
         "active_session": active_session,
         "session_duration": "00:12:45",
+        "formula_grade": formula_grade,
+        "formula_subject": "mathematics",
+        "grades": list(range(4, 13)),
     })
 
 

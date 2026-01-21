@@ -1,0 +1,34 @@
+<div class="formula-panel" data-formula-panel data-api-url="{% url 'formulas_api' %}" data-default-grade="{{ formula_grade|default:10 }}" data-default-subject="{{ formula_subject|default:'mathematics' }}" data-target-calculator="{{ calc_id|default:'calculator-main' }}" {% if read_only %}data-readonly="true"{% endif %}>
+  <header class="formula-panel__header">
+    <div>
+      <p class="formula-panel__kicker">Formulas</p>
+      <h3>Grade & Subject Library</h3>
+    </div>
+    <button class="formula-copy-all" type="button">Copy all</button>
+  </header>
+
+  <div class="formula-panel__filters">
+    <label>
+      <span>Grade</span>
+      <select data-formula-grade>
+        {% for grade in grades %}
+          <option value="{{ grade }}" {% if grade == formula_grade %}selected{% endif %}>Grade {{ grade }}</option>
+        {% endfor %}
+      </select>
+    </label>
+    <label>
+      <span>Subject</span>
+      <select data-formula-subject>
+        <option value="mathematics" {% if formula_subject == "mathematics" %}selected{% endif %}>Mathematics</option>
+        <option value="physical_sciences" {% if formula_subject == "physical_sciences" %}selected{% endif %}>Physical Sciences</option>
+        <option value="accounting" {% if formula_subject == "accounting" %}selected{% endif %}>Accounting</option>
+        <option value="geography" {% if formula_subject == "geography" %}selected{% endif %}>Geography</option>
+        <option value="life_sciences" {% if formula_subject == "life_sciences" %}selected{% endif %}>Life Sciences</option>
+      </select>
+    </label>
+  </div>
+
+  <div class="formula-panel__list" data-formula-list>
+    <p class="formula-empty">Select a grade and subject to load formulas.</p>
+  </div>
+</div>

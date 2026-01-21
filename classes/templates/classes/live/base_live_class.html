@@ -5,6 +5,7 @@
 {% block extra_head %}
   <link rel="stylesheet" href="{% static 'core/css/live_class.css' %}">
   <link rel="stylesheet" href="{% static 'core/css/classroom.css' %}">
+  <link rel="stylesheet" href="{% static 'core/css/calculator.css' %}">
 {% endblock %}
 
 {% block body_class %}live-class-body{% endblock %}
@@ -32,6 +33,10 @@
           <span class="tool-icon">📂</span>
           <span class="tool-label">Files</span>
         </button>
+        <button class="tool-btn" type="button" data-panel-toggle="calculator">
+          <span class="tool-icon">🧮</span>
+          <span class="tool-label">Calculator</span>
+        </button>
         <button class="tool-btn" type="button" data-panel-toggle="ai">
           <span class="tool-icon">🤖</span>
           <span class="tool-label">AI Assistant</span>
@@ -54,6 +59,7 @@
           {% include "classes/live/components/whiteboard_panel.html" %}
           {% include "classes/live/components/notes_panel.html" %}
           {% include "classes/live/components/files_panel.html" %}
+          {% include "classes/live/components/calculator_panel.html" %}
           {% include "classes/live/components/ai_panel.html" %}
         </div>
       </aside>
@@ -63,4 +69,6 @@
   </div>
 
   <script src="{% static 'core/js/live_class.js' %}"></script>
+  <script src="{% static 'core/js/calculator.js' %}"></script>
+  <script src="{% static 'core/js/formulas.js' %}"></script>
 {% endblock %}

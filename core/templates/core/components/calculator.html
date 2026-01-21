@@ -1,0 +1,58 @@
+<div class="calculator" data-calculator data-calculator-id="{{ calc_id|default:'calculator-main' }}">
+  <div class="calculator-display">
+    <span class="calc-memory" data-memory-indicator hidden>M</span>
+    <input class="calc-input" type="text" value="0" readonly aria-label="Calculator display" data-calc-display>
+  </div>
+  <div class="calc-keypad">
+    <button class="calc-btn" type="button" data-action="clear">AC</button>
+    <button class="calc-btn" type="button" data-action="delete">DEL</button>
+    <button class="calc-btn" type="button" data-action="percent">%</button>
+    <button class="calc-btn" type="button" data-insert="(">(</button>
+    <button class="calc-btn" type="button" data-insert=")">)</button>
+
+    <button class="calc-btn" type="button" data-action="mc">MC</button>
+    <button class="calc-btn" type="button" data-action="mr">MR</button>
+    <button class="calc-btn" type="button" data-action="mplus">M+</button>
+    <button class="calc-btn" type="button" data-action="mminus">M−</button>
+    <button class="calc-btn" type="button" data-insert="pi">π</button>
+
+    <button class="calc-btn" type="button" data-insert="sin(">sin</button>
+    <button class="calc-btn" type="button" data-insert="cos(">cos</button>
+    <button class="calc-btn" type="button" data-insert="tan(">tan</button>
+    <button class="calc-btn" type="button" data-insert="asin(">sin⁻¹</button>
+    <button class="calc-btn" type="button" data-insert="acos(">cos⁻¹</button>
+
+    <button class="calc-btn" type="button" data-insert="atan(">tan⁻¹</button>
+    <button class="calc-btn" type="button" data-insert="log(">log</button>
+    <button class="calc-btn" type="button" data-insert="ln(">ln</button>
+    <button class="calc-btn" type="button" data-insert="sqrt(">√</button>
+    <button class="calc-btn" type="button" data-insert="^2">x²</button>
+
+    <button class="calc-btn" type="button" data-insert="^3">x³</button>
+    <button class="calc-btn" type="button" data-insert="^">xʸ</button>
+    <button class="calc-btn" type="button" data-insert="!">!</button>
+    <button class="calc-btn" type="button" data-insert="e">e</button>
+    <button class="calc-btn" type="button" data-insert="/">÷</button>
+
+    <button class="calc-btn" type="button" data-insert="7">7</button>
+    <button class="calc-btn" type="button" data-insert="8">8</button>
+    <button class="calc-btn" type="button" data-insert="9">9</button>
+    <button class="calc-btn" type="button" data-insert="*">×</button>
+    <button class="calc-btn" type="button" data-action="toggle-sign">±</button>
+
+    <button class="calc-btn" type="button" data-insert="4">4</button>
+    <button class="calc-btn" type="button" data-insert="5">5</button>
+    <button class="calc-btn" type="button" data-insert="6">6</button>
+    <button class="calc-btn" type="button" data-insert="-">−</button>
+    <button class="calc-btn" type="button" data-insert="^">^</button>
+
+    <button class="calc-btn" type="button" data-insert="1">1</button>
+    <button class="calc-btn" type="button" data-insert="2">2</button>
+    <button class="calc-btn" type="button" data-insert="3">3</button>
+    <button class="calc-btn" type="button" data-insert="+">+</button>
+    <button class="calc-btn" type="button" data-action="evaluate">=</button>
+
+    <button class="calc-btn" type="button" data-insert="0">0</button>
+    <button class="calc-btn" type="button" data-insert=".">.</button>
+  </div>
+</div>

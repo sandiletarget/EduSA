@@ -1,0 +1,4 @@
+<div class="classroom-calculator">
+  {% include "core/components/calculator.html" with calc_id=calc_id %}
+  {% include "core/components/formulas_panel.html" with calc_id=calc_id formula_grade=formula_grade formula_subject=formula_subject read_only=read_only grades=grades %}
+</div>

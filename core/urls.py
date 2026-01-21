@@ -16,6 +16,7 @@ urlpatterns = [
     path("student/", views.student_dashboard, name="student_dashboard"),
     path("student/join-class/", views.join_class, name="join_class"),
     path("student/progress/", views.student_progress, name="student_progress"),
+    path("api/formulas/", views.formulas_api, name="formulas_api"),
     path("classes/", include("classes.urls")),
     path('teacher/quiz-results/', views.teacher_quiz_results, name='teacher_quiz_results'),
     path('verify-certificate/', views.verify_certificate, name='verify_certificate'),

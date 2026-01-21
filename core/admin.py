@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Choice, Lesson, Progress, Question, Quiz, QuizResult
+from .models import Choice, Formula, Lesson, Progress, Question, Quiz, QuizResult
 
 
 @admin.register(Lesson)
@@ -41,3 +41,11 @@ class QuizResultAdmin(admin.ModelAdmin):
     list_display = ("student", "quiz", "score", "completed_at")
     search_fields = ("student__username", "quiz__title")
     ordering = ("-completed_at",)
+
+
+@admin.register(Formula)
+class FormulaAdmin(admin.ModelAdmin):
+    list_display = ("grade", "subject", "topic", "created_at")
+    list_filter = ("grade", "subject")
+    search_fields = ("topic", "formula_text", "explanation")
+    ordering = ("grade", "subject", "topic")

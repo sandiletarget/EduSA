@@ -1,4 +1,10 @@
 {% extends "core/base_student.html" %}
+{% load static %}
+
+{% block extra_head %}
+  {{ block.super }}
+  <link rel="stylesheet" href="{% static 'core/css/calculator.css' %}">
+{% endblock %}
 
 {% block dashboard_content %}
 <section class="dashboard-hero">
@@ -69,6 +75,16 @@
       {% endfor %}
     </div>
   </div>
+
+  <div class="panel">
+    <div class="panel__header">
+      <h2>Calculator & Formulas</h2>
+      <button class="link-button" type="button" data-calculator-open>Open</button>
+    </div>
+    <div class="panel__body">
+      <p class="panel-empty">Quick access to subject formulas and a scientific calculator.</p>
+    </div>
+  </div>
 </section>
 
 <section class="panel">
@@ -89,4 +105,21 @@
     {% endfor %}
   </div>
 </section>
+
+<div class="calculator-modal" data-calculator-modal hidden>
+  <div class="calculator-modal__backdrop" data-calculator-close></div>
+  <div class="calculator-modal__content" role="dialog" aria-modal="true" aria-label="Scientific calculator and formula library">
+    <header class="calculator-modal__header">
+      <h2>Scientific Calculator</h2>
+      <button class="icon-btn" type="button" data-calculator-close aria-label="Close calculator">×</button>
+    </header>
+    <div class="calculator-modal__body">
+      {% include "core/components/classroom_calculator.html" with calc_id="calculator-main" formula_grade=learner_grade formula_subject="mathematics" grades=grades read_only=True %}
+    </div>
+  </div>
+</div>
+
+<script src="{% static 'core/js/calculator.js' %}"></script>
+<script src="{% static 'core/js/formulas.js' %}"></script>
+<script src="{% static 'core/js/calculator_modal.js' %}"></script>
 {% endblock %}
