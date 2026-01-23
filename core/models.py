@@ -1,9 +1,9 @@
 import uuid
-from django.utils.text import slugify
 
 from django.conf import settings
 from django.db import models
 from django.db.models import Q
+from django.utils.text import slugify
 
 
 class CAPSVersion(models.Model):
@@ -91,6 +91,31 @@ class Subject(models.Model):
         return self.name
 
 
+class Topic(models.Model):
+    subject = models.ForeignKey(Subject, on_delete=models.CASCADE, related_name="topics")
+    grade = models.ForeignKey(Grade, on_delete=models.CASCADE, related_name="topics")
+    name = models.CharField(max_length=150)
+
+    class Meta:
+        ordering = ("grade", "subject", "name")
+        unique_together = ("subject", "grade", "name")
+
+    def __str__(self):
+        return f"{self.name} ({self.subject.name})"
+
+
+class Subtopic(models.Model):
+    topic = models.ForeignKey(Topic, on_delete=models.CASCADE, related_name="subtopics")
+    name = models.CharField(max_length=150)
+
+    class Meta:
+        ordering = ("topic", "name")
+        unique_together = ("topic", "name")
+
+    def __str__(self):
+        return self.name
+
+
 class Course(models.Model):
     caps_version = models.ForeignKey(CAPSVersion, on_delete=models.CASCADE, related_name="courses")
     grade = models.ForeignKey(Grade, on_delete=models.CASCADE, related_name="courses")
@@ -120,31 +145,6 @@ class CourseEnrollment(models.Model):
 
     def __str__(self):
         return f"{self.user} -> {self.course}"
-
-
-class Topic(models.Model):
-    subject = models.ForeignKey(Subject, on_delete=models.CASCADE, related_name="topics")
-    grade = models.ForeignKey(Grade, on_delete=models.CASCADE, related_name="topics")
-    name = models.CharField(max_length=150)
-
-    class Meta:
-        ordering = ("grade", "subject", "name")
-        unique_together = ("subject", "grade", "name")
-
-    def __str__(self):
-        return f"{self.name} ({self.subject.name})"
-
-
-class Subtopic(models.Model):
-    topic = models.ForeignKey(Topic, on_delete=models.CASCADE, related_name="subtopics")
-    name = models.CharField(max_length=150)
-
-    class Meta:
-        ordering = ("topic", "name")
-        unique_together = ("topic", "name")
-
-    def __str__(self):
-        return self.name
 
 
 class Lesson(models.Model):
@@ -209,17 +209,6 @@ class Lesson(models.Model):
         return cls.objects.filter(is_published=True, caps_version__is_active=True)
 
 
-class LessonResource(models.Model):
-    lesson = models.ForeignKey(Lesson, on_delete=models.CASCADE, related_name="resources")
-    resource = models.ForeignKey("Resource", on_delete=models.CASCADE, related_name="lesson_links")
-
-    class Meta:
-        unique_together = ("lesson", "resource")
-
-    def __str__(self):
-        return f"{self.lesson} -> {self.resource}"
-
-
 class Resource(models.Model):
     TYPE_PDF = "pdf"
     TYPE_VIDEO = "video"
@@ -249,6 +238,17 @@ class Resource(models.Model):
 
     def __str__(self):
         return self.title
+
+
+class LessonResource(models.Model):
+    lesson = models.ForeignKey(Lesson, on_delete=models.CASCADE, related_name="resources")
+    resource = models.ForeignKey("Resource", on_delete=models.CASCADE, related_name="lesson_links")
+
+    class Meta:
+        unique_together = ("lesson", "resource")
+
+    def __str__(self):
+        return f"{self.lesson} -> {self.resource}"
 
 
 class CourseAnnouncement(models.Model):
@@ -480,74 +480,35 @@ class Exam(models.Model):
         return self.title
 
 
-class LessonBookmark(models.Model):
-    student = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE,
-        related_name="lesson_bookmarks",
-    )
-    lesson = models.ForeignKey(
-        Lesson,
-        on_delete=models.CASCADE,
-        related_name="bookmarks",
-    )
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    class Meta:
-        unique_together = ("student", "lesson")
-
-    def __str__(self):
-        return f"{self.student} bookmarked {self.lesson}"
-
-
-class LessonNote(models.Model):
-    student = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE,
-        related_name="lesson_notes",
-    )
-    lesson = models.ForeignKey(
-        Lesson,
-        on_delete=models.CASCADE,
-        related_name="notes",
-    )
-    content = models.TextField()
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    class Meta:
-        ordering = ("-created_at",)
-
-    def __str__(self):
-        return f"Note for {self.lesson}"
-
-
 class ExamQuestion(models.Model):
-    TYPE_MULTIPLE_CHOICE = "mcq"
-    TYPE_TRUE_FALSE = "true_false"
-    TYPE_SHORT = "short"
-    TYPE_NUMERIC = "numeric"
-    TYPE_FORMULA = "formula"
-
-    QUESTION_TYPES = [
-        (TYPE_MULTIPLE_CHOICE, "Multiple choice"),
-        (TYPE_TRUE_FALSE, "True/False"),
-        (TYPE_SHORT, "Short answer"),
-        (TYPE_NUMERIC, "Numerical"),
-        (TYPE_FORMULA, "Formula"),
+    QUESTION_TYPE_CHOICES = [
+        ("mcq", "Multiple choice"),
+        ("true_false", "True/False"),
+        ("short", "Short answer"),
+        ("numeric", "Numerical"),
+        ("formula", "Formula"),
     ]
 
-    exam = models.ForeignKey(Exam, on_delete=models.CASCADE, related_name="questions")
+    exam = models.ForeignKey(
+        Exam,
+        on_delete=models.CASCADE,
+        related_name="questions",
+    )
     prompt = models.TextField()
-    question_type = models.CharField(max_length=30, choices=QUESTION_TYPES)
+    question_type = models.CharField(max_length=30, choices=QUESTION_TYPE_CHOICES)
     points = models.PositiveIntegerField(default=1)
     correct_answer = models.TextField(blank=True)
 
     def __str__(self):
-        return self.prompt[:60]
+        return f"{self.exam.title} - {self.question_type}"
 
 
 class ExamOption(models.Model):
-    question = models.ForeignKey(ExamQuestion, on_delete=models.CASCADE, related_name="options")
+    question = models.ForeignKey(
+        ExamQuestion,
+        on_delete=models.CASCADE,
+        related_name="options",
+    )
     text = models.CharField(max_length=300)
     is_correct = models.BooleanField(default=False)
 
@@ -556,8 +517,16 @@ class ExamOption(models.Model):
 
 
 class ExamAttempt(models.Model):
-    exam = models.ForeignKey(Exam, on_delete=models.CASCADE, related_name="attempts")
-    student = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="exam_attempts")
+    exam = models.ForeignKey(
+        Exam,
+        on_delete=models.CASCADE,
+        related_name="attempts",
+    )
+    student = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="exam_attempts",
+    )
     score = models.PositiveIntegerField(default=0)
     started_at = models.DateTimeField(auto_now_add=True)
     completed_at = models.DateTimeField(null=True, blank=True)
@@ -566,19 +535,32 @@ class ExamAttempt(models.Model):
         ordering = ("-started_at",)
 
     def __str__(self):
-        return f"{self.student} - {self.exam}"
+        return f"{self.student} - {self.exam.title}"
 
 
 class ExamAnswer(models.Model):
-    attempt = models.ForeignKey(ExamAttempt, on_delete=models.CASCADE, related_name="answers")
-    question = models.ForeignKey(ExamQuestion, on_delete=models.CASCADE, related_name="answers")
-    selected_option = models.ForeignKey(ExamOption, on_delete=models.SET_NULL, null=True, blank=True)
+    attempt = models.ForeignKey(
+        ExamAttempt,
+        on_delete=models.CASCADE,
+        related_name="answers",
+    )
+    question = models.ForeignKey(
+        ExamQuestion,
+        on_delete=models.CASCADE,
+        related_name="answers",
+    )
+    selected_option = models.ForeignKey(
+        ExamOption,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+    )
     answer_text = models.TextField(blank=True)
     is_correct = models.BooleanField(default=False)
     score_awarded = models.PositiveIntegerField(default=0)
 
     def __str__(self):
-        return f"Answer for {self.question_id}"
+        return f"{self.attempt} - {self.question}"
 
 
 class Formula(models.Model):
@@ -601,4 +583,45 @@ class Formula(models.Model):
         ordering = ("grade", "subject", "topic")
 
     def __str__(self):
-        return f"Grade {self.grade} {self.get_subject_display()} - {self.topic}"
+        return f"{self.subject} Grade {self.grade}: {self.topic}"
+
+
+class LessonBookmark(models.Model):
+    student = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="lesson_bookmarks",
+    )
+    lesson = models.ForeignKey(
+        Lesson,
+        on_delete=models.CASCADE,
+        related_name="bookmarks",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ("student", "lesson")
+
+    def __str__(self):
+        return f"{self.student} - {self.lesson}"
+
+
+class LessonNote(models.Model):
+    student = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="lesson_notes",
+    )
+    lesson = models.ForeignKey(
+        Lesson,
+        on_delete=models.CASCADE,
+        related_name="notes",
+    )
+    content = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ("-created_at",)
+
+    def __str__(self):
+        return f"{self.student} - {self.lesson}"
