@@ -1,7 +1,17 @@
 from django.contrib import admin
+from django import forms
+from ckeditor.widgets import CKEditorWidget
 
 from .models import (
+    ActivityLog,
+    AuditLog,
+    CAPSVersion,
     Choice,
+    Course,
+    CourseAnnouncement,
+    CourseEnrollment,
+    CourseProgress,
+    CourseTermProgress,
     ExamAnswer,
     ExamAttempt,
     ExamOption,
@@ -11,23 +21,50 @@ from .models import (
     Lesson,
     LessonBookmark,
     LessonNote,
+    LessonResource,
+    Notification,
     Progress,
     Question,
     Quiz,
     QuizResult,
+    Resource,
     StudentProgress,
     Subject,
     Subtopic,
     Topic,
+    UserRole,
 )
 
 
+class LessonAdminForm(forms.ModelForm):
+    content = forms.CharField(widget=CKEditorWidget())
+
+    class Meta:
+        model = Lesson
+        fields = "__all__"
+
 @admin.register(Lesson)
 class LessonAdmin(admin.ModelAdmin):
-    list_display = ("title", "subject", "grade", "created_at")
-    list_filter = ("subject", "grade", "subject_ref", "grade_ref")
-    search_fields = ("title", "content", "subject", "notes_text")
-    ordering = ("-created_at",)
+    form = LessonAdminForm
+    list_display = ("title", "grade_ref", "subject_ref", "term", "caps_version", "is_published", "updated_at")
+    list_filter = ("caps_version", "grade_ref", "subject_ref", "term", "is_published")
+    search_fields = ("title", "topic", "content", "key_concepts", "examples", "summary")
+    ordering = ("-updated_at",)
+    list_editable = ("is_published",)
+
+    def has_add_permission(self, request):
+        from .utils import is_curriculum_admin
+        return is_curriculum_admin(request.user)
+
+    def has_change_permission(self, request, obj=None):
+        from .utils import is_curriculum_admin
+        if not is_curriculum_admin(request.user):
+            return request.method in {"GET", "HEAD", "OPTIONS"}
+        return True
+
+    def has_delete_permission(self, request, obj=None):
+        from .utils import is_curriculum_admin
+        return is_curriculum_admin(request.user)
 
 
 @admin.register(Progress)
@@ -72,8 +109,99 @@ class FormulaAdmin(admin.ModelAdmin):
 
 @admin.register(Grade)
 class GradeAdmin(admin.ModelAdmin):
-    list_display = ("number", "label")
+    list_display = ("number", "label", "phase")
+    list_filter = ("phase",)
     ordering = ("number",)
+
+
+@admin.register(Course)
+class CourseAdmin(admin.ModelAdmin):
+    list_display = ("caps_version", "grade", "subject", "is_published", "created_at")
+    list_filter = ("caps_version", "grade", "subject", "is_published")
+    search_fields = ("title", "description")
+
+
+@admin.register(CourseEnrollment)
+class CourseEnrollmentAdmin(admin.ModelAdmin):
+    list_display = ("course", "user", "is_teacher", "is_active", "enrolled_at")
+    list_filter = ("is_teacher", "is_active")
+    search_fields = ("user__username", "course__subject__name")
+
+
+@admin.register(CourseAnnouncement)
+class CourseAnnouncementAdmin(admin.ModelAdmin):
+    list_display = ("course", "title", "created_by", "created_at", "is_published")
+    list_filter = ("course", "is_published")
+    search_fields = ("title", "message")
+
+
+@admin.register(Resource)
+class ResourceAdmin(admin.ModelAdmin):
+    list_display = ("title", "resource_type", "caps_version", "grade", "subject", "is_published")
+    list_filter = ("resource_type", "caps_version", "grade", "subject", "is_published")
+    search_fields = ("title", "description")
+
+
+@admin.register(LessonResource)
+class LessonResourceAdmin(admin.ModelAdmin):
+    list_display = ("lesson", "resource")
+
+
+@admin.register(Notification)
+class NotificationAdmin(admin.ModelAdmin):
+    list_display = ("user", "title", "created_at", "read_at")
+    list_filter = ("read_at",)
+    search_fields = ("title", "message")
+
+
+@admin.register(CourseProgress)
+class CourseProgressAdmin(admin.ModelAdmin):
+    list_display = ("user", "course", "percent_complete", "updated_at")
+
+
+@admin.register(CourseTermProgress)
+class CourseTermProgressAdmin(admin.ModelAdmin):
+    list_display = ("user", "course", "term", "completed", "updated_at")
+    list_filter = ("term", "completed")
+
+
+@admin.register(ActivityLog)
+class ActivityLogAdmin(admin.ModelAdmin):
+    list_display = ("user", "action", "course", "lesson", "created_at")
+    list_filter = ("action",)
+
+
+@admin.register(AuditLog)
+class AuditLogAdmin(admin.ModelAdmin):
+    list_display = ("actor", "action", "target", "created_at")
+    search_fields = ("action", "target")
+
+
+@admin.register(UserRole)
+class UserRoleAdmin(admin.ModelAdmin):
+    list_display = ("user", "role", "created_at")
+    list_filter = ("role",)
+
+
+@admin.register(CAPSVersion)
+class CAPSVersionAdmin(admin.ModelAdmin):
+    list_display = ("year", "description", "is_active", "created_at")
+    list_filter = ("is_active",)
+    search_fields = ("year", "description")
+    ordering = ("-year",)
+    list_editable = ("is_active",)
+
+    def has_add_permission(self, request):
+        from .utils import is_curriculum_admin
+        return is_curriculum_admin(request.user)
+
+    def has_change_permission(self, request, obj=None):
+        from .utils import is_curriculum_admin
+        return is_curriculum_admin(request.user)
+
+    def has_delete_permission(self, request, obj=None):
+        from .utils import is_curriculum_admin
+        return is_curriculum_admin(request.user)
 
 
 @admin.register(Subject)

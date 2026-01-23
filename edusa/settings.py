@@ -64,8 +64,9 @@ INSTALLED_APPS = [
     'allauth.account',
     'allauth.socialaccount',
     'allauth.socialaccount.providers.google',
+    'ckeditor',
     'backend',
-    'classes',
+    'classes.apps.ClassesConfig',
     'core.apps.CoreConfig',
     'main.apps.MainConfig',
     

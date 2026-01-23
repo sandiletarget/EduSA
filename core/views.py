@@ -24,6 +24,13 @@ from .models import (
     Formula,
     Grade,
     Lesson,
+    Course,
+    CourseAnnouncement,
+    CourseEnrollment,
+    Resource,
+    CourseProgress,
+    CourseTermProgress,
+    ActivityLog,
     LessonBookmark,
     LessonNote,
     Progress,
@@ -31,7 +38,7 @@ from .models import (
     StudentProgress,
     Subject,
 )
-from .utils import ROLE_DASHBOARD, dashboard_for_user, resolve_user_role
+from .utils import ROLE_DASHBOARD, dashboard_for_user, resolve_user_role, is_curriculum_admin, course_for_lesson
 
 
 django_engine = engines["django"]
@@ -126,6 +133,10 @@ def is_teacher(user):
     return user.is_staff
 
 
+def is_admin(user):
+    return is_curriculum_admin(user)
+
+
 @login_required
 def choose_role(request):
     current_role = resolve_user_role(request.user)
@@ -166,7 +177,7 @@ def teacher_dashboard(request):
     if redirect_response:
         return redirect_response
 
-    lessons = Lesson.objects.all()
+    lessons = Lesson.published_for_active_caps()
     classes = Classroom.objects.filter(teacher=request.user)
     exams = Exam.objects.filter(created_by=request.user)
     return render(request, "core/teacher_dashboard.html", {
@@ -178,7 +189,7 @@ def teacher_dashboard(request):
 
 
 @login_required
-@user_passes_test(is_teacher)
+@user_passes_test(is_admin)
 def lesson_create(request):
     form = LessonForm(request.POST or None, request.FILES or None)
     if request.method == "POST" and form.is_valid():
@@ -189,7 +200,7 @@ def lesson_create(request):
 
 
 @login_required
-@user_passes_test(is_teacher)
+@user_passes_test(is_admin)
 def lesson_edit(request, pk):
     lesson = get_object_or_404(Lesson, pk=pk)
     form = LessonForm(request.POST or None, request.FILES or None, instance=lesson)
@@ -201,7 +212,7 @@ def lesson_edit(request, pk):
 
 
 @login_required
-@user_passes_test(is_teacher)
+@user_passes_test(is_admin)
 def lesson_delete(request, pk):
     lesson = get_object_or_404(Lesson, pk=pk)
     lesson.delete()
@@ -255,7 +266,7 @@ def lesson_catalog(request):
     grade = Grade.objects.filter(number=grade_number).first() if grade_number else Grade.objects.first()
     subjects = Subject.objects.all()
 
-    lessons = Lesson.objects.select_related("grade_ref", "subject_ref", "topic_ref", "subtopic_ref")
+    lessons = Lesson.published_for_active_caps().select_related("grade_ref", "subject_ref", "topic_ref", "subtopic_ref")
     if grade:
         lessons = lessons.filter(models.Q(grade_ref=grade) | models.Q(grade=str(grade.number)))
     if subject_slug:
@@ -293,10 +304,13 @@ def lesson_catalog(request):
 
 @login_required
 def lesson_detail(request, pk):
-    lesson = get_object_or_404(Lesson, pk=pk)
+    lesson = get_object_or_404(Lesson, pk=pk, is_published=True, caps_version__is_active=True)
     progress, _ = StudentProgress.objects.get_or_create(student=request.user, lesson=lesson)
     progress.last_opened_at = timezone.now()
     progress.save(update_fields=["last_opened_at"])
+
+    course = course_for_lesson(lesson)
+    ActivityLog.objects.create(user=request.user, course=course, lesson=lesson, action="lesson_view")
 
     bookmarked = LessonBookmark.objects.filter(student=request.user, lesson=lesson).exists()
 
@@ -306,6 +320,22 @@ def lesson_detail(request, pk):
             progress.completed = True
             progress.completed_at = timezone.now()
             progress.save(update_fields=["completed", "completed_at"])
+            ActivityLog.objects.create(user=request.user, course=course, lesson=lesson, action="lesson_complete")
+            if course:
+                completed = StudentProgress.objects.filter(student=request.user, lesson__in=Lesson.objects.filter(grade_ref=course.grade, subject_ref=course.subject, caps_version=course.caps_version), completed=True).count()
+                total = Lesson.objects.filter(grade_ref=course.grade, subject_ref=course.subject, caps_version=course.caps_version, is_published=True).count() or 1
+                percent = round((completed / total) * 100, 2)
+                CourseProgress.objects.update_or_create(
+                    user=request.user,
+                    course=course,
+                    defaults={"percent_complete": percent},
+                )
+                CourseTermProgress.objects.update_or_create(
+                    user=request.user,
+                    course=course,
+                    term=lesson.term,
+                    defaults={"completed": True},
+                )
             messages.success(request, "Lesson marked as completed.")
             return redirect("lesson_detail", pk=lesson.pk)
         if action == "bookmark":
@@ -333,8 +363,105 @@ def lesson_detail(request, pk):
 
 @login_required
 def lesson_detail_slug(request, slug):
-    lesson = get_object_or_404(Lesson, slug=slug)
+    lesson = get_object_or_404(Lesson, slug=slug, is_published=True, caps_version__is_active=True)
     return lesson_detail(request, lesson.pk)
+
+
+@login_required
+def course_list_api(request):
+    grade_number = request.GET.get("grade")
+    subject_slug = request.GET.get("subject")
+    caps = Course.objects.filter(caps_version__is_active=True, is_published=True)
+    if grade_number:
+        caps = caps.filter(grade__number=grade_number)
+    if subject_slug:
+        caps = caps.filter(subject__slug=subject_slug)
+    payload = [
+        {
+            "id": course.id,
+            "caps_year": course.caps_version.year,
+            "grade": course.grade.number,
+            "subject": course.subject.slug,
+            "title": course.title or str(course),
+        }
+        for course in caps
+    ]
+    return JsonResponse({"courses": payload})
+
+
+@login_required
+def course_detail_api(request, course_id):
+    course = get_object_or_404(Course, pk=course_id, caps_version__is_active=True, is_published=True)
+    lessons = Lesson.published_for_active_caps().filter(
+        grade_ref=course.grade,
+        subject_ref=course.subject,
+        caps_version=course.caps_version,
+    ).order_by("term", "title")
+    resources = Resource.objects.filter(
+        caps_version=course.caps_version,
+        grade=course.grade,
+        subject=course.subject,
+        is_published=True,
+    ).order_by("-created_at")
+    announcements = CourseAnnouncement.objects.filter(course=course, is_published=True)[:20]
+
+    payload = {
+        "course": {
+            "id": course.id,
+            "caps_year": course.caps_version.year,
+            "grade": course.grade.number,
+            "subject": course.subject.slug,
+            "title": course.title or str(course),
+        },
+        "lessons": [
+            {
+                "id": lesson.id,
+                "title": lesson.title,
+                "term": lesson.term,
+                "topic": lesson.topic,
+                "slug": lesson.slug,
+            }
+            for lesson in lessons
+        ],
+        "resources": [
+            {
+                "id": resource.id,
+                "title": resource.title,
+                "type": resource.resource_type,
+                "url": resource.url,
+                "file": resource.file.url if resource.file else "",
+            }
+            for resource in resources
+        ],
+        "announcements": [
+            {
+                "id": announcement.id,
+                "title": announcement.title,
+                "message": announcement.message,
+                "created_at": announcement.created_at.isoformat(),
+            }
+            for announcement in announcements
+        ],
+    }
+    return JsonResponse(payload)
+
+
+@login_required
+def notifications_api(request):
+    notifications = request.user.notifications.all()[:50]
+    return JsonResponse({
+        "notifications": [
+            {
+                "id": note.id,
+                "title": note.title,
+                "message": note.message,
+                "link": note.link,
+                "created_at": note.created_at.isoformat(),
+                "read_at": note.read_at.isoformat() if note.read_at else None,
+            }
+            for note in notifications
+        ]
+    })
 
 
 @login_required

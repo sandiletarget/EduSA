@@ -110,6 +110,15 @@ class Assessment(models.Model):
         default="pdf,docx,jpg,jpeg,png",
         help_text="Comma-separated list of allowed extensions",
     )
+    allow_resubmission = models.BooleanField(default=False)
+    attempt_limit = models.PositiveSmallIntegerField(null=True, blank=True)
+    rubric = models.ForeignKey(
+        "Rubric",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="assessments",
+    )
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -138,6 +147,8 @@ class AssessmentSubmission(models.Model):
     mark = models.PositiveSmallIntegerField(null=True, blank=True)
     feedback = models.TextField(blank=True)
     graded_at = models.DateTimeField(null=True, blank=True)
+    attempt_number = models.PositiveSmallIntegerField(default=1)
+    file_hash = models.CharField(max_length=64, blank=True, default="")
 
     class Meta:
         ordering = ("-submitted_at",)
@@ -152,6 +163,64 @@ class AssessmentSubmission(models.Model):
         if not due_date or not self.submitted_at:
             return False
         return self.submitted_at.date() > due_date
+
+    @property
+    def status(self):
+        if self.graded_at:
+            return "graded"
+        if self.is_late:
+            return "late"
+        return "submitted"
+
+
+class Rubric(models.Model):
+    title = models.CharField(max_length=200)
+    description = models.TextField(blank=True, default="")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.title
+
+
+class RubricCriterion(models.Model):
+    rubric = models.ForeignKey(Rubric, on_delete=models.CASCADE, related_name="criteria")
+    title = models.CharField(max_length=200)
+    description = models.TextField(blank=True, default="")
+    max_score = models.PositiveSmallIntegerField(default=5)
+    order = models.PositiveSmallIntegerField(default=1)
+
+    class Meta:
+        ordering = ("order",)
+
+    def __str__(self):
+        return f"{self.rubric.title} - {self.title}"
+
+
+class RubricScore(models.Model):
+    submission = models.ForeignKey(AssessmentSubmission, on_delete=models.CASCADE, related_name="rubric_scores")
+    criterion = models.ForeignKey(RubricCriterion, on_delete=models.CASCADE, related_name="scores")
+    score = models.PositiveSmallIntegerField(default=0)
+    comment = models.TextField(blank=True, default="")
+    graded_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = ("submission", "criterion")
+
+    def __str__(self):
+        return f"{self.submission} - {self.criterion.title}"
+
+
+class SubmissionComment(models.Model):
+    submission = models.ForeignKey(AssessmentSubmission, on_delete=models.CASCADE, related_name="comments")
+    author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True)
+    comment = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ("-created_at",)
+
+    def __str__(self):
+        return f"{self.submission} comment"
 
 
 class ChatMessage(models.Model):

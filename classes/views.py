@@ -13,6 +13,7 @@ from core.forms import JoinClassForm
 from core.utils import resolve_user_role
 from .forms import ClassForm, AssessmentForm, AssessmentSubmissionForm, AssessmentGradeForm
 from .models import Assessment, AssessmentSubmission, Class, ClassMembership, LiveSession
+from core.models import ActivityLog
 
 
 logger = logging.getLogger(__name__)
@@ -206,14 +207,29 @@ def assessment_submit(request, assessment_id):
     )
 
     if request.method == "POST" and form.is_valid():
-        submission, _ = AssessmentSubmission.objects.update_or_create(
-            assessment=assessment,
-            student=request.user,
-            defaults={
-                "submission_file": form.cleaned_data["submission_file"],
-                "submitted_at": timezone.now(),
-            },
-        )
+        existing = AssessmentSubmission.objects.filter(assessment=assessment, student=request.user).first()
+        if existing and not assessment.allow_resubmission:
+            messages.error(request, "Resubmission is not allowed for this assessment.")
+            return redirect("classes:assessment_list", pk=classroom.pk)
+        if assessment.attempt_limit:
+            attempts = AssessmentSubmission.objects.filter(assessment=assessment, student=request.user).count()
+            if attempts >= assessment.attempt_limit:
+                messages.error(request, "You have reached the submission limit for this assessment.")
+                return redirect("classes:assessment_list", pk=classroom.pk)
+
+        if existing:
+            submission = existing
+            submission.submission_file = form.cleaned_data["submission_file"]
+            submission.submitted_at = timezone.now()
+            submission.attempt_number = existing.attempt_number + 1
+            submission.save(update_fields=["submission_file", "submitted_at", "attempt_number"])
+        else:
+            submission = AssessmentSubmission.objects.create(
+                assessment=assessment,
+                student=request.user,
+                submission_file=form.cleaned_data["submission_file"],
+            )
+        ActivityLog.objects.create(user=request.user, course=None, lesson=None, action="submission", metadata={"assessment_id": assessment.id, "submission_id": submission.id})
 
         send_mail(
             subject=f"Assessment submission confirmation: {assessment.title}",
