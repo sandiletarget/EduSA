@@ -5,7 +5,7 @@ from classes.models import Class, ClassMembership
 @pytest.mark.django_db
 def test_learner_can_join_class():
     # ARRANGE
-    teacher = User.objects.create_user("teacher", password="123")
+    teacher = User.objects.create_user("teacher", password="123", is_staff=True)
     learner = User.objects.create_user("learner", password="123")
 
     classroom = Class.objects.create(

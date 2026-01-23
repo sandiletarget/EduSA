@@ -12,6 +12,7 @@
 
   socket.addEventListener("open", function () {
     socket.send(JSON.stringify({ event: "join", user: username }));
+    window.dispatchEvent(new CustomEvent("signaling_status", { detail: { state: "open" } }));
   });
 
   socket.addEventListener("message", function (event) {
@@ -21,5 +22,10 @@
 
   socket.addEventListener("close", function () {
     console.warn("Signaling socket closed.");
+    window.dispatchEvent(new CustomEvent("signaling_status", { detail: { state: "closed" } }));
+  });
+
+  socket.addEventListener("error", function () {
+    window.dispatchEvent(new CustomEvent("signaling_status", { detail: { state: "error" } }));
   });
 })();

@@ -278,6 +278,60 @@
   color: var(--live-muted);
 }
 
+.ai-section {
+  margin-top: 1rem;
+}
+
+.ai-section h3 {
+  margin: 0 0 0.5rem;
+  font-size: 0.9rem;
+}
+
+.ai-list {
+  display: grid;
+  gap: 0.4rem;
+  font-size: 0.85rem;
+  color: var(--live-muted);
+}
+
+.ai-input {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.6rem;
+}
+
+.ai-input input {
+  flex: 1;
+  padding: 0.4rem 0.6rem;
+  border-radius: 8px;
+  border: 1px solid var(--live-border);
+  background: transparent;
+  color: var(--live-text);
+}
+
+.ai-input button {
+  background: var(--live-accent);
+  border: none;
+  color: #fff;
+  padding: 0.4rem 0.7rem;
+  border-radius: 8px;
+}
+
+.ai-summary {
+  background: rgba(15, 23, 42, 0.3);
+  border-radius: 8px;
+  padding: 0.6rem;
+  color: var(--live-text);
+  white-space: pre-wrap;
+}
+
+.ai-answer {
+  background: rgba(15, 23, 42, 0.25);
+  padding: 0.5rem;
+  border-radius: 8px;
+  margin-top: 0.4rem;
+}
+
 @media (max-width: 1024px) {
   .live-class-main {
     grid-template-columns: 1fr;

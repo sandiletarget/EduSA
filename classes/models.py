@@ -135,6 +135,9 @@ class AssessmentSubmission(models.Model):
     )
     submission_file = models.FileField(upload_to="assessment_submissions/")
     submitted_at = models.DateTimeField(auto_now_add=True)
+    mark = models.PositiveSmallIntegerField(null=True, blank=True)
+    feedback = models.TextField(blank=True)
+    graded_at = models.DateTimeField(null=True, blank=True)
 
     class Meta:
         ordering = ("-submitted_at",)
@@ -142,3 +145,31 @@ class AssessmentSubmission(models.Model):
 
     def __str__(self):
         return f"{self.student} - {self.assessment}"
+
+    @property
+    def is_late(self):
+        due_date = self.assessment.due_date
+        if not due_date or not self.submitted_at:
+            return False
+        return self.submitted_at.date() > due_date
+
+
+class ChatMessage(models.Model):
+    classroom = models.ForeignKey(
+        Class,
+        on_delete=models.CASCADE,
+        related_name="chat_messages",
+    )
+    sender = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="classroom_messages",
+    )
+    message = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ("created_at",)
+
+    def __str__(self):
+        return f"{self.sender} - {self.classroom.name}"

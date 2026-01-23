@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Assessment, AssessmentSubmission, Class, ClassMembership, LiveSession
+from .models import Assessment, AssessmentSubmission, Class, ClassMembership, LiveSession, ChatMessage
 
 
 @admin.register(Class)
@@ -34,7 +34,15 @@ class AssessmentAdmin(admin.ModelAdmin):
 
 @admin.register(AssessmentSubmission)
 class AssessmentSubmissionAdmin(admin.ModelAdmin):
-	list_display = ("assessment", "student", "submitted_at")
+	list_display = ("assessment", "student", "submitted_at", "mark", "graded_at")
 	list_filter = ("assessment",)
 	search_fields = ("student__username", "assessment__title")
 	ordering = ("-submitted_at",)
+
+
+@admin.register(ChatMessage)
+class ChatMessageAdmin(admin.ModelAdmin):
+	list_display = ("classroom", "sender", "created_at")
+	list_filter = ("classroom",)
+	search_fields = ("sender__username", "message")
+	ordering = ("-created_at",)

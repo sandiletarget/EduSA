@@ -1,28 +1,32 @@
 {% extends "core/base.html" %}
 
+{% block body_class %}auth-body app-gradient{% endblock %}
+
 {% block content %}
-<div class="mx-auto max-w-xl rounded-2xl bg-white/90 p-8 shadow-xl">
-  <h1 class="text-2xl font-semibold text-slate-900">Choose your role</h1>
-  <p class="mt-2 text-slate-600">Select the dashboard you want to use. You can change later by logging out and selecting again.</p>
+<div class="auth-shell">
+  <div class="auth-card app-card">
+    <h1 class="auth-title">Choose your role</h1>
+    <p class="auth-muted">Select the dashboard you want to use. You can change later by logging out and selecting again.</p>
 
-  {% if messages %}
-    <div class="mt-4 space-y-2">
-      {% for message in messages %}
-        <div class="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700">
-          {{ message }}
-        </div>
-      {% endfor %}
-    </div>
-  {% endif %}
+    {% if messages %}
+      <div class="auth-actions">
+        {% for message in messages %}
+          <div class="app-panel app-panel-soft">
+            <span class="auth-muted">{{ message }}</span>
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
 
-  <form method="post" class="mt-6 space-y-4">
-    {% csrf_token %}
-    <button name="role" value="student" class="w-full rounded-lg bg-sky-600 px-4 py-2 text-white shadow-sm hover:bg-sky-500">
-      Continue as Student
-    </button>
-    <button name="role" value="teacher" class="w-full rounded-lg bg-indigo-600 px-4 py-2 text-white shadow-sm hover:bg-indigo-500">
-      Continue as Teacher
-    </button>
-  </form>
+    <form method="post" class="auth-actions">
+      {% csrf_token %}
+      <button name="role" value="student" class="app-btn app-btn-primary" type="submit">
+        Continue as Student
+      </button>
+      <button name="role" value="teacher" class="app-btn app-btn-outline" type="submit">
+        Continue as Teacher
+      </button>
+    </form>
+  </div>
 </div>
 {% endblock %}

@@ -1,0 +1,62 @@
+{% extends "core/base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="classroom-page">
+  {% include "core/components/grade_nav.html" %}
+  <section class="classroom-panel">
+    <div class="panel-header">
+      <div>
+        <p class="panel-kicker">Submissions</p>
+        <h2>{{ assessment.title }}</h2>
+        <p class="panel-subtitle">{{ classroom.name }}</p>
+      </div>
+      <a class="btn btn-outline" href="{% url 'classes:teacher_assessment_list' classroom.pk %}">Back to assessments</a>
+    </div>
+
+    <div class="panel__body">
+      {% for row in submission_rows %}
+        {% with submission=row.submission form=row.form %}
+        <div class="panel-item">
+          <div>
+            <div>
+              <h3>{{ submission.student.get_full_name|default:submission.student.username }}</h3>
+              <p class="muted">{{ submission.student.email|default:"No email" }}</p>
+            </div>
+            <div>
+              <span class="chip">Submitted {{ submission.submitted_at|date:"Y-m-d H:i" }}</span>
+              {% if submission.is_late %}
+                <span class="chip chip-danger">Late</span>
+              {% else %}
+                <span class="chip chip-success">On time</span>
+              {% endif %}
+            </div>
+          </div>
+
+          <div>
+            <p class="muted">File:</p>
+            {% if submission.submission_file %}
+              <a class="btn btn-outline" href="{{ submission.submission_file.url }}" download>Download submission</a>
+            {% else %}
+              <p class="muted">No file uploaded.</p>
+            {% endif %}
+          </div>
+
+          <div>
+            <form method="post">
+              {% csrf_token %}
+              <input type="hidden" name="submission_id" value="{{ submission.id }}">
+              {{ form.mark }}
+              {{ form.feedback }}
+              <button class="btn btn-primary" type="submit">Save feedback</button>
+            </form>
+          </div>
+        </div>
+        {% endwith %}
+      {% empty %}
+        <p class="panel-empty">No submissions yet.</p>
+      {% endfor %}
+    </div>
+  </section>
+</div>
+{% endblock %}

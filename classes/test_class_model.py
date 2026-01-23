@@ -7,7 +7,8 @@ def test_teacher_can_create_class():
     # ARRANGE (set up data)
     teacher = User.objects.create_user(
         username="teacher1",
-        password="pass123"
+        password="pass123",
+        is_staff=True,
     )
 
     # ACT (do the thing)

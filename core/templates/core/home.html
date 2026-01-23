@@ -1,12 +1,13 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>EduSA Home</title>
-</head>
-<body>
-    <h1>Welcome to EduSA</h1>
-    <p>
-        <a href="{% url 'teacher_dashboard' %}">Go to Teacher Dashboard</a>
-    </p>
-</body>
-</html>
+{% extends "core/base.html" %}
+
+{% block body_class %}auth-body app-gradient{% endblock %}
+
+{% block content %}
+<div class="auth-shell">
+    <div class="auth-card app-card">
+        <h1 class="auth-title">Welcome to EduSA</h1>
+        <p class="auth-muted">Your digital learning platform.</p>
+        <a class="app-btn app-btn-primary" href="{% url 'teacher_dashboard' %}">Go to Teacher Dashboard</a>
+    </div>
+</div>
+{% endblock %}

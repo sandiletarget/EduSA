@@ -1,0 +1,17 @@
+<div class="calculator-modal" id="calculatorModal" aria-hidden="true">
+  <div class="calculator-modal__backdrop" data-modal-close></div>
+  <div class="calculator-modal__dialog" role="dialog" aria-modal="true" aria-label="Scientific calculator">
+    <header class="calculator-modal__header">
+      <h2>Scientific Calculator</h2>
+      <button type="button" class="modal-close" data-modal-close>×</button>
+    </header>
+    <div class="calculator-modal__content">
+      <div class="calculator-modal__calculator">
+        {% include "core/components/calculator_widget.html" %}
+      </div>
+      <div class="calculator-modal__formulas">
+        {% include "core/components/formula_panel.html" %}
+      </div>
+    </div>
+  </div>
+</div>

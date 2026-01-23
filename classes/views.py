@@ -11,7 +11,7 @@ from django.utils import timezone
 
 from core.forms import JoinClassForm
 from core.utils import resolve_user_role
-from .forms import ClassForm, AssessmentForm, AssessmentSubmissionForm
+from .forms import ClassForm, AssessmentForm, AssessmentSubmissionForm, AssessmentGradeForm
 from .models import Assessment, AssessmentSubmission, Class, ClassMembership, LiveSession
 
 
@@ -239,4 +239,74 @@ def assessment_submit(request, assessment_id):
         "assessment": assessment,
         "classroom": classroom,
         "form": form,
+    })
+
+
+@login_required
+def teacher_assessment_list(request, pk):
+    classroom = get_object_or_404(Class, pk=pk)
+    if request.user != classroom.teacher:
+        raise PermissionDenied
+
+    assessments = (
+        classroom.assessments
+        .select_related("grade_ref", "subject_ref")
+        .prefetch_related("submissions")
+        .order_by("-created_at")
+    )
+
+    assessment_cards = []
+    for assessment in assessments:
+        assessment_cards.append({
+            "assessment": assessment,
+            "submission_count": assessment.submissions.count(),
+        })
+
+    return render(request, "classes/teacher_assessment_list.html", {
+        "classroom": classroom,
+        "assessment_cards": assessment_cards,
+    })
+
+
+@login_required
+def teacher_submission_detail(request, assessment_id):
+    assessment = get_object_or_404(Assessment, pk=assessment_id)
+    classroom = assessment.classroom
+    if request.user != classroom.teacher:
+        raise PermissionDenied
+
+    submissions = (
+        assessment.submissions
+        .select_related("student")
+        .order_by("-submitted_at")
+    )
+
+    form_overrides = {}
+    if request.method == "POST":
+        submission_id = request.POST.get("submission_id")
+        submission = get_object_or_404(AssessmentSubmission, pk=submission_id, assessment=assessment)
+        form = AssessmentGradeForm(request.POST, instance=submission, prefix=str(submission.id))
+        if form.is_valid():
+            graded = form.save(commit=False)
+            graded.graded_at = timezone.now()
+            graded.save(update_fields=["mark", "feedback", "graded_at"])
+            messages.success(request, "Feedback saved.")
+            return redirect("classes:teacher_submission_detail", assessment_id=assessment.id)
+        form_overrides[submission.id] = form
+
+    submission_rows = []
+    for submission in submissions:
+        form = form_overrides.get(submission.id) or AssessmentGradeForm(
+            instance=submission,
+            prefix=str(submission.id),
+        )
+        submission_rows.append({
+            "submission": submission,
+            "form": form,
+        })
+
+    return render(request, "classes/teacher_submission_detail.html", {
+        "assessment": assessment,
+        "classroom": classroom,
+        "submission_rows": submission_rows,
     })

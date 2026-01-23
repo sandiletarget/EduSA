@@ -164,6 +164,17 @@
     signalingSend({ event: "offer", target: peerId, offer: offer });
   }
 
+  function renderChatMessage(payload) {
+    var chat = document.getElementById("chatMessages");
+    if (!chat) return;
+    var msg = document.createElement("div");
+    msg.className = "chat-message";
+    var timestamp = payload.timestamp ? " <span class=\"chat-time\">" + payload.timestamp + "</span>" : "";
+    msg.innerHTML = "<strong>" + (payload.user || "User") + ":</strong> " + payload.message + timestamp;
+    chat.appendChild(msg);
+    chat.scrollTop = chat.scrollHeight;
+  }
+
   window.addEventListener("signaling", function (event) {
     var data = event.detail;
     if (data.event === "offer") {
@@ -173,17 +184,32 @@
     } else if (data.event === "ice") {
       handleIce(data);
     } else if (data.event === "chat") {
+      renderChatMessage(data);
+    } else if (data.event === "chat_history" && Array.isArray(data.messages)) {
       var chat = document.getElementById("chatMessages");
       if (chat) {
-        var msg = document.createElement("div");
-        msg.className = "chat-message";
-        msg.innerHTML = "<strong>" + (data.user || "User") + ":</strong> " + data.message;
-        chat.appendChild(msg);
+        chat.innerHTML = "";
+        data.messages.forEach(renderChatMessage);
       }
     } else if (data.event === "join" && data.user) {
       if (data.user !== username) {
         createOffer(data.user);
       }
+    }
+  });
+
+  window.addEventListener("signaling_status", function (event) {
+    var status = event.detail || {};
+    var label = document.getElementById("chatStatus");
+    if (!label) return;
+    if (status.state === "open") {
+      label.textContent = "Connected";
+    } else if (status.state === "closed") {
+      label.textContent = "Disconnected";
+    } else if (status.state === "error") {
+      label.textContent = "Connection error";
+    } else {
+      label.textContent = "Connecting…";
     }
   });
 
@@ -297,6 +323,10 @@
   document.getElementById("sendChat")?.addEventListener("click", function () {
     var input = document.getElementById("chatInput");
     if (!input || !input.value) return;
+    if (!window.signalingSocket || window.signalingSocket.readyState !== WebSocket.OPEN) {
+      alert("Chat is not connected. Please wait for reconnection.");
+      return;
+    }
     signalingSend({ event: "chat", message: input.value, user: layout.getAttribute("data-username") });
     input.value = "";
   });

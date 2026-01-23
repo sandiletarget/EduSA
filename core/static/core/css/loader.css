@@ -1,8 +1,9 @@
 :root {
-  --loader-bg-start: #3b82f6;
-  --loader-bg-end: #4f46e5;
-  --loader-text: #f8fafc;
-  --loader-glow: rgba(255, 255, 255, 0.75);
+  --loader-bg-start: #081f63;
+  --loader-bg-end: #0b2c78;
+  --loader-text: #eef2ff;
+  --loader-glow: rgba(64, 255, 214, 1);
+  --loader-glow-soft: rgba(64, 255, 214, 0.5);
 }
 
 .global-loader {
@@ -24,7 +25,7 @@
 .global-loader__backdrop {
   position: absolute;
   inset: 0;
-  background: linear-gradient(135deg, var(--loader-bg-start), var(--loader-bg-end));
+  background: linear-gradient(140deg, var(--loader-bg-start), var(--loader-bg-end));
   filter: blur(0px);
 }
 
@@ -32,7 +33,7 @@
   position: relative;
   z-index: 1;
   display: grid;
-  gap: 0.75rem;
+  gap: 1.1rem;
   place-items: center;
   text-align: center;
   color: var(--loader-text);
@@ -41,35 +42,36 @@
 
 .infinity {
   position: relative;
-  width: 120px;
-  height: 56px;
+  width: 180px;
+  height: 90px;
 }
 
 .infinity span {
   position: absolute;
-  top: 0;
-  left: 0;
-  width: 56px;
-  height: 56px;
+  top: 6px;
+  left: 10px;
+  width: 70px;
+  height: 70px;
   border: 4px solid var(--loader-glow);
   border-radius: 50%;
+  border-top-color: transparent;
   border-left-color: transparent;
-  border-bottom-color: transparent;
-  animation: infinity-loop 2.2s linear infinite;
-  box-shadow: 0 0 12px rgba(255, 255, 255, 0.35);
+  animation: infinity-loop 1.8s linear infinite;
+  box-shadow: 0 0 24px var(--loader-glow-soft), 0 0 40px rgba(64, 255, 214, 0.35);
 }
 
 .infinity span:nth-child(2) {
-  left: 64px;
+  left: 90px;
   transform: rotate(180deg);
+  animation-delay: 0.1s;
 }
 
 @keyframes infinity-loop {
   0% {
-    transform: rotate(0deg);
+    transform: rotate(0deg) scale(0.98);
   }
   100% {
-    transform: rotate(360deg);
+    transform: rotate(360deg) scale(1.02);
   }
 }
 
@@ -108,11 +110,11 @@
 @keyframes word-glide {
   0%,
   100% {
-    transform: translateX(-8px);
-    opacity: 0.85;
+    transform: translateX(-10px) translateY(2px);
+    opacity: 0.8;
   }
   50% {
-    transform: translateX(8px);
+    transform: translateX(10px) translateY(-2px);
     opacity: 1;
   }
 }

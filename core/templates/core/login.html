@@ -1,25 +1,27 @@
+{% extends "core/base.html" %}
 {% load socialaccount %}
 
-<h2>EduSA Login</h2>
-<form method="post">
-  {% csrf_token %}
-  {% if error %}
-  <p class="text-red-600">{{ error }}</p>
-  {% endif %}
-  {% if next %}
-  <input type="hidden" name="next" value="{{ next }}">
-  {% endif %}
-  <input name="username" placeholder="Username"><br><br>
-  <input name="password" type="password" placeholder="Password"><br><br>
-  <button type="submit">Login</button>
-</form>
+{% block body_class %}auth-body app-gradient{% endblock %}
 
-<hr>
-
-<div>
-  <a href="{% provider_login_url 'google' next=next %}">Continue with Google</a>
+{% block content %}
+<div class="auth-shell">
+  <div class="auth-card app-card">
+    <h2 class="auth-title">EduSA Login</h2>
+    <p class="auth-muted">Welcome back. Continue your learning journey.</p>
+    <form method="post" class="auth-actions">
+      {% csrf_token %}
+      {% if error %}
+        <p class="auth-muted">{{ error }}</p>
+      {% endif %}
+      {% if next %}
+        <input type="hidden" name="next" value="{{ next }}">
+      {% endif %}
+      <input class="auth-input" name="username" placeholder="Username">
+      <input class="auth-input" name="password" type="password" placeholder="Password">
+      <button class="app-btn app-btn-primary" type="submit">Login</button>
+    </form>
+    <a class="app-btn app-btn-outline" href="{% provider_login_url 'google' next=next %}">Continue with Google</a>
+    <a class="auth-link" href="/accounts/signup/">Create an account</a>
+  </div>
 </div>
-
-<p>
-  <a href="/accounts/signup/">Create an account</a>
-</p>
+{% endblock %}

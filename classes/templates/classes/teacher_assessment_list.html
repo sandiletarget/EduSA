@@ -7,20 +7,16 @@
   <section class="classroom-panel">
     <div class="panel-header">
       <div>
-        <p class="panel-kicker">Assessments</p>
-        <h2>{{ classroom.name }}</h2>
+        <p class="panel-kicker">Teacher Panel</p>
+        <h2>Assessment Submissions</h2>
+        <p class="panel-subtitle">{{ classroom.name }}</p>
       </div>
-      {% if is_teacher %}
-        <div class="panel-actions">
-          <a class="btn btn-outline" href="{% url 'classes:teacher_assessment_list' classroom.pk %}">View submissions</a>
-          <a class="btn btn-primary" href="{% url 'classes:assessment_create' classroom.pk %}">Create assessment</a>
-        </div>
-      {% endif %}
+      <a class="btn btn-outline" href="{% url 'classes:assessment_list' classroom.pk %}">Back to assessments</a>
     </div>
 
     <div class="panel__body">
       {% for card in assessment_cards %}
-        {% with assessment=card.assessment submission=card.submission %}
+        {% with assessment=card.assessment %}
           <div class="panel-item">
             <div>
               <h3>{{ assessment.title }}</h3>
@@ -30,11 +26,8 @@
               {% endif %}
             </div>
             <div>
-              {% if submission %}
-                <span class="chip">Submitted</span>
-              {% else %}
-                <a class="btn btn-outline" href="{% url 'classes:assessment_submit' assessment.id %}">Submit</a>
-              {% endif %}
+              <span class="chip">{{ card.submission_count }} submissions</span>
+              <a class="btn btn-primary" href="{% url 'classes:teacher_submission_detail' assessment.id %}">View submissions</a>
             </div>
           </div>
         {% endwith %}

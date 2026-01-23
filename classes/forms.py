@@ -88,3 +88,26 @@ class AssessmentSubmissionForm(forms.ModelForm):
             if ext not in self.allowed_extensions:
                 raise forms.ValidationError("File type not allowed.")
         return file
+
+
+class AssessmentGradeForm(forms.ModelForm):
+    class Meta:
+        model = AssessmentSubmission
+        fields = ["mark", "feedback"]
+        widgets = {
+            "mark": forms.NumberInput(
+                attrs={
+                    "min": 0,
+                    "max": 100,
+                    "class": "mt-1 w-full rounded-lg border border-slate-200 px-4 py-2 text-sm text-slate-900",
+                    "placeholder": "Mark (0-100)",
+                }
+            ),
+            "feedback": forms.Textarea(
+                attrs={
+                    "class": "mt-1 w-full rounded-lg border border-slate-200 px-4 py-2 text-sm text-slate-900",
+                    "rows": 3,
+                    "placeholder": "Feedback for the student",
+                }
+            ),
+        }

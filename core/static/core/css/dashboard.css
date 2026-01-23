@@ -362,6 +362,16 @@ body.student-theme {
   font-weight: 600;
 }
 
+.chip-success {
+  background: rgba(22, 163, 74, 0.12);
+  color: #16a34a;
+}
+
+.chip-danger {
+  background: rgba(239, 68, 68, 0.12);
+  color: #ef4444;
+}
+
 .muted {
   color: var(--muted);
 }

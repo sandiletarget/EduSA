@@ -317,6 +317,32 @@
   border-radius: 10px;
 }
 
+.chat-message {
+  padding: 0.45rem 0.6rem;
+  border-radius: 10px;
+  background: rgba(63, 81, 181, 0.08);
+  margin-bottom: 0.45rem;
+  font-size: 0.85rem;
+}
+
+.chat-message strong {
+  color: var(--live-primary);
+}
+
+.chat-time {
+  margin-left: 0.4rem;
+  color: var(--live-muted);
+  font-size: 0.7rem;
+}
+
+.chat-status {
+  font-size: 0.7rem;
+  color: var(--live-muted);
+  display: inline-flex;
+  align-items: center;
+  margin-left: auto;
+}
+
 .panel-close {
   background: transparent;
   border: none;

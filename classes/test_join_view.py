@@ -6,7 +6,7 @@ from classes.models import Class, ClassMembership
 @pytest.mark.django_db
 def test_join_class_view(client):
     # ARRANGE
-    teacher = User.objects.create_user("teacher", password="123")
+    teacher = User.objects.create_user("teacher", password="123", is_staff=True)
     learner = User.objects.create_user("learner", password="123")
 
     classroom = Class.objects.create(
@@ -19,7 +19,7 @@ def test_join_class_view(client):
     client.login(username="learner", password="123")
 
     response = client.post(
-        reverse("join_class"),
+        reverse("classes:join_class"),
         {"passcode": "PASS1234"}
     )
 

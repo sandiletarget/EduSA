@@ -1,0 +1,38 @@
+<section class="side-panel" data-panel="ai">
+  <header class="side-panel__header">
+    <h2>AI Assistant</h2>
+    <button class="panel-close" type="button" data-panel-close>×</button>
+  </header>
+  <div class="side-panel__body">
+    <p class="muted">AI assistance is for learning support only.</p>
+    <div class="ai-section">
+      <h3>Live Key Points</h3>
+      <ul id="aiKeyPoints" class="ai-list">
+        <li>Waiting for transcript...</li>
+      </ul>
+    </div>
+
+    <div class="ai-section">
+      <h3>Q&amp;A</h3>
+      <div id="aiAnswers" class="ai-list"></div>
+      <div class="ai-input">
+        <input id="aiQuestionInput" type="text" placeholder="Ask the AI..." aria-label="Ask the AI">
+        <button id="askAi">Ask</button>
+      </div>
+    </div>
+
+    <div class="ai-section">
+      <h3>Summary</h3>
+      <pre id="aiSummary" class="ai-summary">No summary yet.</pre>
+      {% if is_teacher %}
+        <button id="approveSummary" class="mini-btn">Approve summary</button>
+      {% endif %}
+    </div>
+  </div>
+  {% if is_teacher %}
+    <footer class="side-panel__footer">
+      <button id="toggleAi" type="button">Disable AI</button>
+      <button id="toggleMode" type="button">Mode: Passive</button>
+    </footer>
+  {% endif %}
+</section>
