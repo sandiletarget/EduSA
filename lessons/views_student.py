@@ -9,7 +9,7 @@ from core.models import Lesson, Progress as LessonProgress
 @login_required
 @student_required
 def student_lesson_list(request):
-    lessons = Lesson.objects.all().order_by('-created_at')
+    lessons = Lesson.published_for_active_caps().order_by('-created_at')
     return render(request, 'students/lesson_list.html', {
         'lessons': lessons
     })
@@ -18,7 +18,7 @@ def student_lesson_list(request):
 @login_required
 @student_required
 def student_lesson_detail(request, pk):
-    lesson = get_object_or_404(Lesson, pk=pk)
+    lesson = get_object_or_404(Lesson, pk=pk, is_published=True, caps_version__is_active=True)
     progress = LessonProgress.objects.filter(
         student=request.user,
         lesson=lesson

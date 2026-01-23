@@ -15,14 +15,14 @@ from core.models import Choice, Lesson, Question, Quiz, QuizResult
 
 @login_required
 def student_lesson_list(request):
-    lessons = Lesson.objects.all().order_by('-created_at')
+    lessons = Lesson.published_for_active_caps().order_by('-created_at')
     return render(request, 'students/lesson_list.html', {
         'lessons': lessons
     })
 
 @login_required
 def student_lesson_detail(request, pk):
-    lesson = get_object_or_404(Lesson, pk=pk)
+    lesson = get_object_or_404(Lesson, pk=pk, is_published=True, caps_version__is_active=True)
     return render(request, 'students/lesson_detail.html', {
         'lesson': lesson
     })
