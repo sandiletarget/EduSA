@@ -271,12 +271,13 @@ def teacher_assessment_list(request, pk):
         .order_by("-created_at")
     )
 
-    assessment_cards = []
-    for assessment in assessments:
-        assessment_cards.append({
+    assessment_cards = [
+        {
             "assessment": assessment,
             "submission_count": assessment.submissions.count(),
-        })
+        }
+        for assessment in assessments
+    ]
 
     return render(request, "classes/teacher_assessment_list.html", {
         "classroom": classroom,

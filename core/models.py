@@ -182,10 +182,8 @@ class Lesson(models.Model):
         return self.title
 
     def save(self, *args, **kwargs):
-        if not self.caps_version:
-            active_caps = CAPSVersion.get_active()
-            if active_caps:
-                self.caps_version = active_caps
+        if not self.caps_version and (active_caps := CAPSVersion.get_active()):
+            self.caps_version = active_caps
         if not self.slug:
             base = slugify(self.title) or "lesson"
             candidate = base

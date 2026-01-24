@@ -168,9 +168,7 @@ class AssessmentSubmission(models.Model):
     def status(self):
         if self.graded_at:
             return "graded"
-        if self.is_late:
-            return "late"
-        return "submitted"
+        return "late" if self.is_late else "submitted"
 
 
 class Rubric(models.Model):

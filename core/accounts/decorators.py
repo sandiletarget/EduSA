@@ -8,10 +8,6 @@ def student_required(view_func):
         if not user.is_authenticated:
             return False
         role = resolve_user_role(user)
-        if role == "student":
-            return True
-        if role:
-            return False
-        return not getattr(user, "is_staff", False)
+        return role == "student" if role else not getattr(user, "is_staff", False)
 
     return user_passes_test(_is_student)(view_func)

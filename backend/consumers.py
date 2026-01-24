@@ -88,11 +88,10 @@ class LiveClassConsumer(AsyncJsonWebsocketConsumer):
     @database_sync_to_async
     def _user_allowed(self, user, class_id):
         classroom = Class.objects.filter(pk=class_id).first()
-        if not classroom:
-            return False
-        if user == classroom.teacher:
-            return True
-        return ClassMembership.objects.filter(classroom=classroom, learner=user).exists()
+        return bool(classroom) and (
+            user == classroom.teacher
+            or ClassMembership.objects.filter(classroom=classroom, learner=user).exists()
+        )
 
     @database_sync_to_async
     def _ensure_participant(self, user):
@@ -123,14 +122,14 @@ class LiveClassConsumer(AsyncJsonWebsocketConsumer):
             .select_related("sender")
             .order_by("-created_at")[:limit]
         )
-        items = []
-        for msg in reversed(list(messages)):
-            items.append({
+        return [
+            {
                 "user": msg.sender.username,
                 "message": msg.message,
                 "timestamp": msg.created_at.strftime("%H:%M"),
-            })
-        return items
+            }
+            for msg in reversed(list(messages))
+        ]
 
     async def _send_recent_messages(self):
         messages = await self._get_recent_messages()

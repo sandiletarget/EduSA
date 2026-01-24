@@ -88,9 +88,7 @@ def _dispatch_dashboard_redirect(request, expected_role):
     if normalized_role == expected_role:
         return None
     dashboard = ROLE_DASHBOARD.get(normalized_role)
-    if dashboard:
-        return redirect(dashboard)
-    return redirect("choose_role")
+    return redirect(dashboard or "choose_role")
 
 
 
@@ -105,12 +103,9 @@ def login_view(request):
         username = request.POST.get("username")
         password = request.POST.get("password")
 
-        user = authenticate(request, username=username, password=password)
-        if user:
+        if (user := authenticate(request, username=username, password=password)):
             login(request, user)
-            dashboard_name = dashboard_for_user(user)
-            if not dashboard_name:
-                dashboard_name = "choose_role"
+            dashboard_name = dashboard_for_user(user) or "choose_role"
             allowed_hosts = {request.get_host()}
             if next_url and url_has_allowed_host_and_scheme(next_url, allowed_hosts=allowed_hosts, require_https=request.is_secure()):
                 return redirect(next_url)
@@ -173,8 +168,7 @@ def choose_role(request):
 
 @login_required
 def teacher_dashboard(request):
-    redirect_response = _dispatch_dashboard_redirect(request, "teacher")
-    if redirect_response:
+    if redirect_response := _dispatch_dashboard_redirect(request, "teacher"):
         return redirect_response
 
     lessons = Lesson.published_for_active_caps()
@@ -234,11 +228,10 @@ def exam_create(request):
 
 @login_required
 def student_dashboard(request):
-    redirect_response = _dispatch_dashboard_redirect(request, "student")
-    if redirect_response:
+    if redirect_response := _dispatch_dashboard_redirect(request, "student"):
         return redirect_response
 
-    lessons = Lesson.objects.all()
+    lessons = Lesson.published_for_active_caps()
     memberships = ClassMembership.objects.filter(learner=request.user).select_related("classroom")
     classrooms = [membership.classroom for membership in memberships]
     exams = Exam.objects.filter(classroom__in=classrooms)
@@ -347,8 +340,7 @@ def lesson_detail(request, pk):
             messages.info(request, "Bookmark removed.")
             return redirect("lesson_detail", pk=lesson.pk)
         if action == "note":
-            content = (request.POST.get("note") or "").strip()
-            if content:
+            if (content := (request.POST.get("note") or "").strip()):
                 LessonNote.objects.create(student=request.user, lesson=lesson, content=content)
                 messages.success(request, "Note saved.")
             return redirect("lesson_detail", pk=lesson.pk)
@@ -561,7 +553,7 @@ def lessons_api(request):
     grade = request.GET.get("grade")
     subject = request.GET.get("subject")
 
-    lessons = Lesson.objects.all()
+    lessons = Lesson.published_for_active_caps()
     if grade:
         lessons = lessons.filter(models.Q(grade_ref__number=grade) | models.Q(grade=grade))
     if subject:

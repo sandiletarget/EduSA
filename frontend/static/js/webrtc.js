@@ -191,10 +191,8 @@
         chat.innerHTML = "";
         data.messages.forEach(renderChatMessage);
       }
-    } else if (data.event === "join" && data.user) {
-      if (data.user !== username) {
-        createOffer(data.user);
-      }
+    } else if (data.event === "join" && data.user && data.user !== username) {
+      createOffer(data.user);
     }
   });
 
